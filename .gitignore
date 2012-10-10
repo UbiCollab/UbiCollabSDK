@@ -1,8 +1,15 @@
-*.class
-
-# Package Files #
+# Generated files #
 *.jar
 *.war
 *.ear
+*.apk
+*.ap_
+*.dex
+*.class
 javadoc/*
 bin/*
+gen/*
+
+# Local configuration file (sdk path, etc) #
+local.properties
+
