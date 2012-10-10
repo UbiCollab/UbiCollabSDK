@@ -1,0 +1,2 @@
+Version 0.2
+- Enhancement: Removed references to skeleton app that was used to create the project in eclipse
