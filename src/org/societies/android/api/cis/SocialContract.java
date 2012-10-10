@@ -31,7 +31,7 @@ import android.net.Uri;
  * <h1>Class SocialContract</h1>
  * Provides utility constant values for using SocialProvider.<br /><br /> 
  * 
- * Please read information about content providers in Android 
+ * Please read information about how to use content providers in Android 
  * in order to learn how to use this contract. You can start by
  * going into <a href="http://developer.android.com/guide/topics/providers/content-providers.html" target="_blank">this page</a> 
  * at Android developers site.
