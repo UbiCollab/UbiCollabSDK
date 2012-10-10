@@ -19,11 +19,12 @@
 
 <resources>
     <!-- Simple strings. -->
-    <string name="skeleton_app">Skeleton App</string>
+    <string name="ubicollab_sdk">UbiCollab SDK</string>
     <string name="back">Back</string>
     <string name="clear">Clear</string>
 
     <!-- This is a complex string containing style runs. -->
-    <string name="main_label">Hello <u>th<ignore>e</ignore>re</u>, <i>you</i> <b>Activity</b>!</string>
+    <string name="main_label">UbiCollab<u>th<ignore>e</ignore>re</u>, <i>you</i> <b>Activity</b>!</string>
+    <string name="version">0.1</string>
 </resources>
 
