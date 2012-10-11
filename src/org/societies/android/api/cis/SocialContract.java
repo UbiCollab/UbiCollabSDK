@@ -991,7 +991,7 @@ public final class SocialContract {
 	 * <ul>
 	 * <li>{@link GLOBAL_ID}
 	 * <li>{@link NAME}
-	 * <li>{@link DISPLAY_NAME} (Optional)
+	 * <li>{@link DISPLAY_NAME} (Optional, set to "NA" if not provided)
 	 * <li>{@link USER_NAME}
 	 * <li>{@link PASSWORD}
 	 * <li>{@link ORIGIN}
@@ -1002,7 +1002,7 @@ public final class SocialContract {
 	 * <ul>
 	 * <li>{@link GLOBAL_ID}
 	 * <li>{@link NAME}
-	 * <li>{@link DISPLAY_NAME} (Optional)
+	 * <li>{@link DISPLAY_NAME}
 	 * <li>{@link USER_NAME}
 	 * <li>{@link PASSWORD}
 	 * <li>{@link ORIGIN}
