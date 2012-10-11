@@ -260,20 +260,23 @@ public final class SocialContract {
 	 * 
 	 * <h1>Insert</h1> 
 	 * Applications can insert communities that will be confirmed
-	 * by SyncAdapters. While confirmation pending, {@link SYNCH_STATUS}
-	 * will show "pending". Applications will have to provide the following
+	 * by SyncAdapters. While confirmation pending,
+	 *  {@link GLOBAL_ID} will show "Pending".
+	 *  
+	 * Applications will have to provide the following
 	 * parameters in when inserting:
 	 * <ul>
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional)
+	 * <li>{@link DESCRIPTION} (optional, will be set to "No description" if not provided)
 	 * <li>{@link ORIGIN}
 	 * </ul>
 	 * 
-	 * When an application inserts a community, SYNC_STATUS will be
-	 * set to "pending" by {@link SocialProvider}. This has to be changed
-	 * by a SyncAdapter upon next successful synchronization.
+	 * When an application inserts a community, {@link GLOBAL_ID} will be
+	 * set to "Pending" by {@link SocialProvider}. This has to be changed
+	 * by a SyncAdapter upon next successful synchronization. The sync
+	 * adapter then has to write the correct global_id.
 	 * 
 	 * SyncAdapters can also insert communities. SyncAdapters have to
 	 * set the following parameters in the query in order to insert successfully:
@@ -405,18 +408,19 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional)
+	 * <li>{@link DESCRIPTION} (optional, set to "NA" if not provided)
 	 * <li>{@link APP_TYPE}
 	 * <li>{@link ORIGIN}
 	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional)
-	 * <li>{@link CONFIG} (Optional)
-	 * <li>{@link URL} (Optional)
+	 * <li>{@link DEPENDENCY} (Optional, set to "NA" if not provided)
+	 * <li>{@link CONFIG} (Optional, set to "NA" if not provided)
+	 * <li>{@link URL} (Optional, set to "NA" if not provided)
 	 * </ul>
 	 * 
-	 * When an application inserts a service, SYNC_STATUS will be
-	 * set to "pending" by {@link SocialProvider}. This has to be changed
-	 * by a SyncAdapter upon next successful synchronization.
+	 * When an application inserts a service, GLOBAL_ID will be
+	 * set to "Pending" by {@link SocialProvider}. This has to be changed
+	 * by a SyncAdapter upon next successful synchronization. A valid
+	 * GLOBAL_ID has to be written back.
 	 * 
 	 * SyncAdapters can also insert services. SyncAdapters have to
 	 * set the following parameters in the query in order to insert successfully:
@@ -425,13 +429,13 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional)
+	 * <li>{@link DESCRIPTION} (optional, set to "NA" if not provided)
 	 * <li>{@link APP_TYPE}
 	 * <li>{@link ORIGIN}
 	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional)
-	 * <li>{@link CONFIG} (Optional)
-	 * <li>{@link URL} (Optional)
+	 * <li>{@link DEPENDENCY} (Optional, set to "NA" if not provided)
+	 * <li>{@link CONFIG} (Optional, set to "NA" if not provided)
+	 * <li>{@link URL} (Optional, set to "NA" if not provided)
 	 * <li>{@link CREATION_DATE}
 	 * <li>{@link SYNC_STATUS}
 	 * </ul>
