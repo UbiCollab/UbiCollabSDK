@@ -119,60 +119,84 @@ public final class SocialContract {
 	 * Constants and helpers for operating on people.<br />
 	 * <br />
 	 * This is the URI you will use for accessing information about people.
-	 * Every CSS/person which is accessible from {@link SocialProvider} has an
-	 * entry in this table. You can search for people using GLOBAL_ID, name etc.
+	 * Every person who is accessible from {@link SocialProvider} and is
+	 * considered to be of interest to the user has an
+	 * entry in this table. You can search for people using global_id, 
+	 * name etc.
+	 * <br />
 	 * You can find information about both of the following:
 	 * <ul>
-	 * <li>People you have a relationship to.</li>
-	 * <li>People you don't have a relationship to.</li>
+	 * <li>People you have a relationship to. This means both of you use 
+	 * some common service (e.g. Facebook) and have decided to be e.g.
+	 * friends or followers etc.</li>
+	 * <li>People you don't have a relationship to but want to keep
+	 * informed about. This might be Obama or your neighbor. The information
+	 * about this type of people will not be verifiable and will probably
+	 * be very inaccurate.</li>
 	 * </ul>
-	 * Of course for people to whom you have a relationship (e.g. friends)
-	 * might be represented with more information than those you do 
-	 * not have a relationship to. But the method of accessing this 
-	 * information is the same for all people.
+	 * For people to whom you have a relationship with (e.g. Facebook friends)
+	 * there will exist a verifiable global_id set by SyncAdapters only. For
+	 * all other people global_id will be set to "Pending". Depending on the 
+	 * ORIGIN field value (which might e.g. be "Facebook") a synch adapter 
+	 * might pick up a record with "Pending" global_id and update the record
+	 * to friend status by updating the global_id.
 	 * 
 	 * <h1>Insert</h1> 
-	 * Applications cannot insert people.<br />
-	 * <br />
-	 * Insert will be supported for SyncAdapters only. SyncAdapters have to
-	 * set the following parameters in the query in order to insert successfully:
+	 * Applications can insert people by providing the following:
 	 * <ul>
-	 * <li>{@link GLOBAL_ID}
 	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION} (Optional)
 	 * <li>{@link EMAIL} (Optional)
 	 * <li>{@link ORIGIN}
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
 	 * </ul>
-	 * 
-	 * The following parameters can also be set:
-	 * <ul>
-	 * </ul>
+	 * Note that it is important to provide the ORIGIN so that Syncing with
+	 * services can update a new people record to a real person if this is 
+	 * needed. The value of the ORIGIN field depends on the target SyncAdapter.
+	 * It might for instance be "Facebook". See proper SyncAdapter documentation.
+	 * <br />
+	 * If ORIGIN is set to "private" the newly created person
+	 * will not be updated by SyncAdapters. This can be used for building
+	 * a private address book within People part of SocialProvider.
+	 * <br /> 
+	 * SyncAdapters will not insert or delete people, they will only update.
 	 * 
 	 * <h1>Update</h1> 
 	 * Applications can update:
 	 * <ul>
 	 * <li>{@link NAME}
-	 * <li>{@link EMAIL}
-	 * <li>{@link DESCRIPTION}
-	 * </ul>
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION}
 	 * <li>{@link EMAIL}
 	 * <li>{@link ORIGIN}
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
 	 * </ul>
 	 * 
+	 * Pay attention to ORIGIN.<br />
+	 * 
+	 * As long as ORIGIN is "private" the record will not be Synced. This for 
+	 * instance means that by changing the ORIGIN field from "private" to e.g.
+	 * "Facebook" the application can connect an existing private record to a
+	 * friend of this user on Facebook. Or the opposite, changing origin 
+	 * from "Facebook" to "private you can disconnect a record from a service.
+	 * 
+	 * SyncAdapters can update:
+	 * <ul>
+	 * <li>{@link GLOBAL_ID}
+	 * <li>{@link NAME}
+	 * <li>{@link EMAIL}
+	 * </ul>
+	 * SyncAdapters will only update people whose ORIGIN corresponds to the
+	 * adapter. GLOBAL_ID will be updated in cases where ORIGIN is set to
+	 * non-private and GLOBAL_ID is "Pending". Or when SyncAdapter discovers
+	 * that the corresponding GLOBAL_ID does not exist anymore (e.g. a 
+	 * Facebook user is deleted).
+	 * 
 	 * <h1>Delete</h1>
-	 * Applications cannot delete people.<br />
+	 * Applications can delete people.<br />
+	 * If a record with ORIGIN="Private" is deleted it will be deleted
+	 * permanently. Otherwise deletion is marked and later handled by
+	 * the proper SyncAdapter.
 	 * <br />
-	 * SyncAdapters can delete people by either appending _ID to the
-	 * end of the query URI or using a standard selection.
+	 * SyncAdapters can delete people that have ORIGIN set to the 
+	 * adapter and that is already marked for deletion by the user.
 	 * 
 	 * <h1>Query</h1>
 	 * Applications can query for people using standard query URI or using _ID as
@@ -261,7 +285,7 @@ public final class SocialContract {
 	 * <h1>Insert</h1> 
 	 * Applications can insert communities that will be confirmed
 	 * by SyncAdapters. While confirmation pending,
-	 *  {@link GLOBAL_ID} will show "Pending".
+	 *  {@link GLOBAL_ID} will be "pending".
 	 *  
 	 * Applications will have to provide the following
 	 * parameters in when inserting:
@@ -269,29 +293,21 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, will be set to "No description" if not provided)
+	 * <li>{@link DESCRIPTION} (optional, will be set to "na" if not provided)
 	 * <li>{@link ORIGIN}
 	 * </ul>
 	 * 
 	 * When an application inserts a community, {@link GLOBAL_ID} will be
-	 * set to "Pending" by {@link SocialProvider}. This has to be changed
+	 * set to "pending" by {@link SocialProvider}. This has to be changed
 	 * by a SyncAdapter upon next successful synchronization. The sync
-	 * adapter then has to write the correct global_id.
+	 * adapter then has to write the correct global_id. While a community
+	 * is pending it will not accept membership or sharing of services.
 	 * 
-	 * SyncAdapters can also insert communities. SyncAdapters have to
-	 * set the following parameters in the query in order to insert successfully:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional)
-	 * <li>{@link ORIGIN}
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
-	 * </ul>
+	 * {@link ORIGIN} should be set a name that is recognizable by
+	 * the appropriate SyncAdapter. E.g. a Facebook SyncAdapter 
+	 * will read only those communities that have ORIGIN set to "Facebook". 
 	 * 
-	 * SYNC_STATUS has to be set to "updated". 
+	 * SyncAdapters cannot insert new communities.
 	 * 
 	 * <h1>Update</h1> 
 	 * Applications can update:
@@ -304,23 +320,20 @@ public final class SocialContract {
 	 * SyncAdapters can update:
 	 * <ul>
 	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
 	 * <li>{@link DESCRIPTION}
-	 * <li>{@link ORIGIN}
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
 	 * </ul>
 	 * 
-	 * SYNC_STATUS has to be set to "updated".
-	 * 
 	 * <h1>Delete</h1>
-	 * Applications can delete people. Only communities that belong to
-	 * the logged-in user can be deleted. A community can be deleted either
-	 * by appending _ID to the end of the URI or via a standard query.<br />
+	 * Applications can delete communities. Only communities that belong to
+	 * the logged-in user can be deleted. When a community is deleted by 
+	 * an application it is only marked as deleted. It is then deleted
+	 * by the SyncAdapter, which also deletes all the memberships and 
+	 * sharings.
 	 * <br />
-	 * SyncAdapters can delete people by either appending _ID to the
-	 * end of the query URI or using a standard selection.
+	 * SyncAdapters can only delete communities that are marked for
+	 * deletion. Deleting a community by a SyncAdapter will also delete 
+	 * all the memberships and sharings for that community.
 	 * 
 	 * <h1>Query</h1>
 	 * Applications and SyncAdapters can query for communities using standard
@@ -585,6 +598,54 @@ public final class SocialContract {
      *  If you want to know who is friends with whom or
      * who is following whom etc. use this.
      * 
+ 	 * <h1>Insert</h1> 
+	 * Applications can insert relationships by providing the following:
+	 * <ul>
+	 * <li>{@link GLOBAL_ID_P1}
+	 * <li>{@link GLOBAL_ID_P2}
+	 * <li>{@link TYPE}
+	 * <li>{@link ORIGIN}
+	 * </ul>
+	 * 
+	 * GLOBAL_ID_P1 and GLOBAL_ID_P2 have to exist among the user's People.<br/>
+	 * 
+	 * ORIGIN refers to the social service, e.g. "Facebook", and is used
+	 * by SyncAdapters. ORIGIN can also be "private" which means it is
+	 * stored only locally.<br/>
+	 * 
+	 * After a relationship is created by an application, its GLOBAL_ID
+	 * is set to "pending" until a sync is performed.<br/>
+	 * 
+	 * SyncAdapters might also insert a relationship. GLOBAL_ID_P1 and 
+	 * GLOBAL_ID_P2 have to exist among the user's People. The following
+	 * should be set when a SyncAdapter inserts relationships:
+	 * 
+	 * <ul>
+	 * <li>{@link GLOBAL_ID}
+	 * <li>{@link GLOBAL_ID_P1}
+	 * <li>{@link GLOBAL_ID_P2}
+	 * <li>{@link TYPE}
+	 * <li>{@link ORIGIN}
+	 * </ul>
+	 * 
+	 * 
+ 	 * <h1>Update</h1>
+ 	 * Nothing can be updated for a relationship.
+ 	 * 
+ 	 * <h1>Query</h1>
+ 	 * 
+ 	 * All relationships fields can be used for querying.
+ 	 * 
+ 	 * <h1>Delete</h1>
+ 	 * An application can delete a relationship. The relationship will then
+ 	 * be labeled deleted but will not be removed until next sync. Relationships
+ 	 * with ORIGIN as "private" will be removed immediately.<br/>
+ 	 * 
+ 	 * SyncAdapters should delete relationships marked for deletion. They
+ 	 * should also delete relationships that are deleted by the
+ 	 * service. In this case the relationship's GLOBAL_ID will be set
+ 	 * to "pending" and its origin will be set to "private".
+ 	 *  
      * @author Babak dot Farshchian at sintef dot no
      *
      */
@@ -639,7 +700,7 @@ public final class SocialContract {
 	 * 
 	 * <h1>Insert</h1> 
 	 * Applications can insert memberships. Applications will have to provide the following
-	 * parameters in when inserting memberships:
+	 * parameters when inserting memberships:
 	 * <ul>
 	 * <li>{@link GLOBAL_ID_MEMBER}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
@@ -647,11 +708,13 @@ public final class SocialContract {
 	 * <li>{@link ORIGIN}
 	 * </ul>
 	 * 
-	 * When an application inserts a membership, SYNC_STATUS will be
-	 * set to "pending" by {@link SocialProvider}. This has to be changed
-	 * by a SyncAdapter upon next successful synchronization.
-	 * 
-	 * SyncAdapters can also insert services. SyncAdapters have to
+	 * The membership will be created only if the member is among user's People and
+	 * only when the communiy is among user's Communities. A pending community
+	 * cannot accept membership. GLOBAL_ID of the membership is set to "pending" 
+	 * until the next sync. ORIGIN is used by SyncAdapters to recognize the 
+	 * relationship during the next sync.<br/>
+	 * <br/>
+	 * SyncAdapters can also insert memberships. SyncAdapters have to
 	 * set the following parameters in the query in order to insert successfully:
 	 * <ul>
 	 * <li>{@link GLOBAL_ID}
@@ -660,8 +723,10 @@ public final class SocialContract {
 	 * <li>{@link TYPE}
 	 * <li>{@link ORIGIN}
 	 * </ul>
+	 * The membership will be inserted only if GLOBAL_ID_MEMBER is an ID of the 
+	 * current user, or the user owns or is a member of GLOBAL_ID_COMMUNITY.
 	 * 
-	 * SYNC_STATUS has to be set to "updated" by the SyncAdapter. 
+	 * Memberships cannot exist privately, i.e. ORIGIN cannot be "private".
 	 * 
 	 * <h1>Update</h1> 
 	 * Applications can update:
@@ -674,7 +739,6 @@ public final class SocialContract {
 	 * <li>{@link TYPE}
 	 * </ul>
 	 * 
-	 * SYNC_STATUS has to be set to "updated" by the SyncAdapter. 
 	 * 
 	 * <h1>Delete</h1>
 	 * Applications can delete memberships. A user (and his/her logged in 
@@ -733,6 +797,8 @@ public final class SocialContract {
      * Class that provides information about what services people have 
      * shared in different communities.
      * 
+     * TODO: similar to membership.
+     * 
      * @author Babak dot Farshchian at sintef dot no
      *
      */
@@ -782,7 +848,18 @@ public final class SocialContract {
      * added to the activity feeds for people. You can search 
      * the table using a specific user's global ID as feed owner 
      * ID.
-     * 
+     * <h1>Insert</h1> 
+	 * Applications can insert activities. Applications will have to provide the following
+	 * parameters when inserting activities:
+	 * <ul>
+	 * <li>{@link GLOBAL_ID_FEED_OWNER}
+	 * <li>{@link GLOBAL_ID_ACTOR}
+	 * <li>{@link GLOBAL_ID_OBJECT}
+	 * <li>{@link GLOBAL_ID_VERB}
+	 * <li>{@link GLOBAL_ID_TARGET}
+	 * <li>{@link ORIGIN}
+	 * </ul>
+	 * 
      * @author Babak dot Farshchian at sintef dot no
      *
      */
@@ -803,7 +880,8 @@ public final class SocialContract {
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner of the feed where the
-         * activity is added.
+         * activity is added. Has to identify a record in
+         * People.
          */
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
         /**
