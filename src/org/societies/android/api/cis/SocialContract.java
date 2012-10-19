@@ -144,6 +144,7 @@ public final class SocialContract {
 	 * <h1>Insert</h1> 
 	 * Applications can insert people by providing the following:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION} (Optional)
 	 * <li>{@link EMAIL} (Optional)
@@ -290,6 +291,7 @@ public final class SocialContract {
 	 * Applications will have to provide the following
 	 * parameters in when inserting:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
@@ -418,6 +420,7 @@ public final class SocialContract {
 	 * Applications can insert services. Applications will have to provide the following
 	 * parameters in when inserting services:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
@@ -601,6 +604,7 @@ public final class SocialContract {
  	 * <h1>Insert</h1> 
 	 * Applications can insert relationships by providing the following:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link GLOBAL_ID_P1}
 	 * <li>{@link GLOBAL_ID_P2}
 	 * <li>{@link TYPE}
@@ -702,6 +706,7 @@ public final class SocialContract {
 	 * Applications can insert memberships. Applications will have to provide the following
 	 * parameters when inserting memberships:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link GLOBAL_ID_MEMBER}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
 	 * <li>{@link TYPE}
@@ -794,10 +799,69 @@ public final class SocialContract {
     }
     
     /**
-     * Class that provides information about what services people have 
-     * shared in different communities.
+     * <br />Constants and helpers for operating on sharing of services in
+     * communities.<br />
+	 * <br />
+	 * This is the URI you will use for accessing information about what is
+	 * shared in which community. Every sharing which is accessible from 
+	 * this user's {@link SocialProvider} has an entry in this table. 
+	 * You can find information about both of the following:
+	 * <ul>
+	 * <li>What is shared by this user in which community.</li>
+	 * <li>What is shared by oher users in which community.</li>
+	 * </ul>
+	 * 
+	 * 
+	 * <h1>Insert</h1> 
+	 * Applications can insert sharing. Applications will have to provide the following
+	 * parameters when inserting memberships:
+	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
+	 * <li>{@link GLOBAL_ID_OWNER}
+	 * <li>{@link GLOBAL_ID_SERVICE}
+	 * <li>{@link GLOBAL_ID_COMMUNITY}
+	 * <li>{@link TYPE}
+	 * <li>{@link ORIGIN}
+	 * </ul>
+	 * 
+	 * <br/>
+	 * SyncAdapters can also insert memberships. SyncAdapters have to
+	 * set the following parameters in the query in order to insert successfully:
+	 * <ul>
+	 * <li>{@link GLOBAL_ID}
+	 * <li>{@link GLOBAL_ID_OWNER}
+	 * <li>{@link GLOBAL_ID_SERVICE}
+	 * <li>{@link GLOBAL_ID_COMMUNITY}
+	 * <li>{@link TYPE}
+	 * <li>{@link ORIGIN}
+	 * </ul>
+	 * <h1>Update</h1> 
+	 * Applications can update:
+	 * <ul>
+	 * <li>{@link TYPE}
+	 * </ul>
+	 * 
+	 * SyncAdapters can update:
+	 * <ul>
+	 * <li>{@link TYPE}
+	 * </ul>
+	 * 
+	 * 
+	 * <h1>Delete</h1>
+	 * Applications can delete a sharing. A user (and his/her logged in 
+	 * application) can delete the following sharings:
+	 * <ul>
+	 * <li>Sharings that involve the user.</li>
+	 * <li>Sharings that involve communities where the user is owner.</li> 
+	 * </ul>
+	 * 
+	 * <br />
+	 * SyncAdapters can delete any sharing.
+	 * 
+	 * <h1>Query</h1>
+	 * Applications and SyncAdapters can query for sharings using standard
+	 * query URI or using _ID as the last part of the URI.
      * 
-     * TODO: similar to membership.
      * 
      * @author Babak dot Farshchian at sintef dot no
      *
@@ -823,15 +887,11 @@ public final class SocialContract {
         /**
          * Global ID for the sharing.
          */
-        public static final String OWNER_GLOBAL_ID = "owner_global_id";
+        public static final String GLOBAL_ID_OWNER = "global_id_owner";
         /**
          * Global ID for the community.
          */
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
-        /**
-         * Global ID for the community.
-         */
-        public static final String GLOBAL_ID_PERSON = "global_id_person";
         /**
          * Type of the sharing. Application-defined.
          */
@@ -852,6 +912,7 @@ public final class SocialContract {
 	 * Applications can insert activities. Applications will have to provide the following
 	 * parameters when inserting activities:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link GLOBAL_ID_FEED_OWNER}
 	 * <li>{@link GLOBAL_ID_ACTOR}
 	 * <li>{@link GLOBAL_ID_OBJECT}
@@ -1164,103 +1225,5 @@ public final class SocialContract {
 		public static final int SERVICE_ACTIVITY_SHARP = 20;
 
 	}
-	
-	/**
-     * Class that defines a pointer (record) to a CIS that I own or am member of.
-     * The CIS itself can be retrieved from Community using GLOBAL_ID that
-     * you get here. MyCommunity gives you a list of CIS records that you
-     * are a member of. You can use this list to look up the actual CIS in 
-     * Community. 
-     * 
-     * @author Babak dot Farshchian at sintef dot no
-     *
-     */
-    @Deprecated
-    public static final class MyCommunity {
-        public static final Uri CONTENT_URI = 
-                    Uri.parse(AUTHORITY_STRING +"/me/communities");
-        public static final String _ID = "_id"; //Key local ID
-        public static final String GLOBAL_ID = "global_id"; //Global ID for the community, e.g. JID
-        public static final String OWNER_ID = "owner"; //Person who owns the community
-      //  public static final String DISPLAY_NAME = "display_name"; //Name of the community to be shown to the user
-    }
-    /**
-     * Class that stores metadata about CISs, both those I am
-     * a member of and those I am not a member of. Use MyCommunity
-     * to find out which CISs you are a member of, then look the CIS
-     * up in this table.
-     * 
-     * @author Babak dot Farshchian at sintef dot no
-     *
-     */
-    
-    @Deprecated
-    public static final class Community {
-        public static final Uri CONTENT_URI = 
-                    Uri.parse(AUTHORITY_STRING+"/communities");
-        public static final String _ID = "_id"; //Key local ID
-        public static final String GLOBAL_ID = "global_id"; //Global ID for the community, e.g. JID
-        public static final String TYPE = "type"; //The type of the community being stored. E.g. "disaster".
-        										//The type will be defined and used by applications.
-        public static final String NAME = "name"; //Name of the community
-    //    public static final String DISPLAY_NAME = "display_name"; //Name of the community to be shown to the user
-        public static final String OWNER_ID = "owner"; //Person who owns the community
-    //    public static final String CREATION_DATE = "creation_date";	
-     //   public static final String MEMBERSHIP_TYPE = "membership_type"; //TODO: need to decide types.
-        public static final String DIRTY = "dirty"; //Used to indicate whether this community's data is changed locally.
-    }
-
-    /**
-     * Class that defines constants related to CSSs:
-     * 
-     * @author Babak dot Farshchian at sintef dot no
-     *
-     */
-    @Deprecated
-    public static final class Person {
-        public static final Uri CONTENT_URI = 
-                    Uri.parse(AUTHORITY_STRING+"/people");
-        public static final String _ID = "_id"; //Key local ID
-        public static final String GLOBAL_ID = "global_id"; //Global ID for the person, e.g. JID
-//        public static final String TYPE = "type"; //The type of the element being stored. CSS for people
-        public static final String NAME = "name"; //Name of the person
-        public static final String EMAIL = "email"; //Owner CSS jid of the group
-        public static final String DISPLAY_NAME = "display_name";
-        public static final String CREATION_DATE = "creation_date";
-    }
-    
-    /**
-     * Class that defines constants for services that can be shared
-     * in communities.
-     * 
-     * @author Babak dot Farshchian at sintef dot no
-     *
-     */
-    @Deprecated
-    public static final class Service {
-        public static final Uri CONTENT_URI = 
-                Uri.parse(AUTHORITY_STRING+"/services");
-        public static final String _ID = "_id"; //Key local ID
-        public static final String GLOBAL_ID = "global_id"; //Global ID for the service. E.g. URL in an app store.
-        public static final String TYPE = "type"; //The type of the service being stored.
-        public static final String NAME = "name"; //Name of the service
-        public static final String DISPLAY_NAME = "display_name";
-        public static final String CREATION_DATE = "creation_date";		
-    }
-    /**
-     * Class that defines constants for memberships in communities
-     * 
-     * @author Babak dot Farshchian at sintef dot no
-     *
-     */
-    @Deprecated
-    public static final class MembershipRecord {
-        public static final String _ID = "_id"; //Key local ID
-        public static final String COMMUNITY_ID = "community_id"; //Key local ID for involved community
-        public static final String PERSON_ID = "person_id"; //Key local ID for involved person
-        public static final String ROLE = "role"; //The role the person plays in the community
-    }
-//TODO: Add service sharing records
-    
     
 }
