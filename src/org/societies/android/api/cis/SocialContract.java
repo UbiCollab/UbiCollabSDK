@@ -24,8 +24,9 @@
  */
 package org.societies.android.api.cis;
 
-import android.net.Uri;
+import java.net.URL;
 
+import android.net.Uri;
 
 /**
  * <h1>Class SocialContract</h1>
@@ -40,19 +41,14 @@ import android.net.Uri;
  * Note that this contract is currently the only documentation
  * of {@link SocialProvider} on Android.
  * 
- * @author Babak dot Farshchian at sintef dot no
+ * @author Babak Farshchian
  *
  */
 public final class SocialContract {
 
 	/**
-	 * The base URI used when calling SocialProvider.<br />
+	 * The URI for identifying the content provider.<br />
 	 * <br />
-	 * 
-	 *  You can use {@link AUTHORITY_STRING} with a field in {@link UriPathIndex}
-	 *   in order to build a URI for your queries to {@link SocialProvider}, e.g.:
-	 *   <br /><br />
-	 *  <code>query(Uri.parse(SocialContract.AUTHORITY_STRING+SocialContract.UriPathIndex.ME),....)</code>
 	 */
 	public static final String AUTHORITY_STRING = "content://org.societies.android.SocialProvider/";
 	
@@ -63,27 +59,61 @@ public final class SocialContract {
             Uri.parse("content://org.societies.android.SocialProvider");
     
     /**
-     * Constants used to define read and write permissions for social data:
+     * A special account type used for fields that are not
+     * supposed to be synced. See also {@link SynchColumns}.
+     * 
+     * When you store something in a row that you don't want
+     * to be synced, set its ACCOUNT_TYPE to this. 
+     */
+    public static final String ACCOUNT_TYPE_LOCAL = "LOCAL";
+    
+    
+    /**
+     * Is used when setting global ID for newly created rows.
+     * If the row is syncable the global ID has to be replaced
+     * with a proper global ID upon a successful first sync.
+     * If the row is private, the global ID will always 
+     * be pending, i.e. it should not be used. 
+     */
+    public static final String GLOBAL_ID_PENDING = "PENDING";
+    
+    /**
+     * A constant that is used to set the value for the optional
+     * fields in case the user does not set them.
+     */
+    public static final String VALUE_NOT_DEFINED = "NA";
+    
+    /**
+     * An optional insert, update or delete URI parameter that 
+     * allows the caller to specify that it is a sync adapter.
+     * <br />
+     * <br />
+     * The default value is false. 
+     * <br /><br />
+     * If set to true, the caller must also include 
+     * ACCOUNT_NAME and ACCOUNT_TYPE as query parameters.
+     * 
+     */
+    public static final String CALLER_IS_SYNCADAPTER = "caller_is_syncadapter";
+    /**
+     * Constant used to define read permission for SocialProvider data:
      */
     public static final String PROVIDER_READ_PERMISSION = "org.societies.android.SocialProvider.READ";
+    /**
+     * Constant used to define write permission for SocialProvider data:
+     */
     public static final String PROVIDER_WRITE_PERMISSION = "org.societies.android.SocialProvider.WRITE";
     
     
     /**
-     * A utility class defining constants for the different 
+     * An internal utility class defining constants for the different 
 	 * paths that are supported by the SocialProvider.<br />
 	 * <br />
-	 * When you are calling content provider methods, use AUTHORITY_STRING
-	 * plus one of the paths in this class so your code is protected
-	 * against errors in paths and URIs, e.g.:<br />
-	 * <br />
-	 *  <code>query(Uri.parse(SocialContract.AUTHORITY_STRING+ SocialContract.UriPathIndex.ME),....)</code>
-	 * <br />
 	 * 
-	 * @author Babak dot Farshchian at sintef dot no
+	 * @author Babak Farshchian
 	 *
 	 */
-	public static final class UriPathIndex{
+	protected static final class UriPathIndex{
 		
 		/**
 		 * Path segment for searching for all my identities/user profiles.
@@ -134,12 +164,12 @@ public final class SocialContract {
 	 * about this type of people will not be verifiable and will probably
 	 * be very inaccurate.</li>
 	 * </ul>
-	 * For people to whom you have a relationship with (e.g. Facebook friends)
-	 * there will exist a verifiable global_id set by SyncAdapters only. For
-	 * all other people global_id will be set to "Pending". Depending on the 
-	 * ORIGIN field value (which might e.g. be "Facebook") a synch adapter 
-	 * might pick up a record with "Pending" global_id and update the record
-	 * to friend status by updating the global_id.
+	 * Each row has a GLOBAL_ID that is set by the account which syncs
+	 * the row. If the account is ACCOUNT_TYPE_LOCAL, the row will not be 
+	 * synced with any service. For local rows GLOBAL_ID is always 
+	 * GLOBAL_ID_PENDING. Also if you add a new row with account type
+	 * e.g. "Facebook", the row will have GLOBAL ID set to
+	 * GLOBAL_ID_PENDING until the first sync assigns a real "Facebook" ID.
 	 * 
 	 * <h1>Insert</h1> 
 	 * Applications can insert people by providing the following:
@@ -148,14 +178,14 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION} (Optional)
 	 * <li>{@link EMAIL} (Optional)
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
-	 * Note that it is important to provide the ORIGIN so that Syncing with
+	 * Note that it is important to provide the ACCOUNT_TYPE so that Syncing with
 	 * services can update a new people record to a real person if this is 
-	 * needed. The value of the ORIGIN field depends on the target SyncAdapter.
+	 * needed. The value of the ACCOUNT_TYPE field depends on the target SyncAdapter.
 	 * It might for instance be "Facebook". See proper SyncAdapter documentation.
 	 * <br />
-	 * If ORIGIN is set to "private" the newly created person
+	 * If ACCOUNT_TYPE is set to ACCOUNT_TYPE_LOCAL the newly created person
 	 * will not be updated by SyncAdapters. This can be used for building
 	 * a private address book within People part of SocialProvider.
 	 * <br /> 
@@ -167,16 +197,16 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION}
 	 * <li>{@link EMAIL}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
-	 * Pay attention to ORIGIN.<br />
+	 * Pay attention to ACCOUNT_TYPE.<br />
 	 * 
-	 * As long as ORIGIN is "private" the record will not be Synced. This for 
-	 * instance means that by changing the ORIGIN field from "private" to e.g.
+	 * As long as ACCOUNT_TYPE is ACCOUNT_TYPE_LOCAL the record will not be Synced. This for 
+	 * instance means that by changing the ACCOUNT_TYPE field from ACCOUNT_TYPE_LOCAL to e.g.
 	 * "Facebook" the application can connect an existing private record to a
-	 * friend of this user on Facebook. Or the opposite, changing origin 
-	 * from "Facebook" to "private you can disconnect a record from a service.
+	 * friend of this user on Facebook. Or the opposite, changing ACCOUNT_TYPE 
+	 * from "Facebook" to ACCOUNT_TYPE_LOCAL you can disconnect a record from a service.
 	 * 
 	 * SyncAdapters can update:
 	 * <ul>
@@ -184,29 +214,29 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link EMAIL}
 	 * </ul>
-	 * SyncAdapters will only update people whose ORIGIN corresponds to the
-	 * adapter. GLOBAL_ID will be updated in cases where ORIGIN is set to
-	 * non-private and GLOBAL_ID is "Pending". Or when SyncAdapter discovers
+	 * SyncAdapters will only update people whose ACCOUNT_TYPE corresponds to the
+	 * adapter. GLOBAL_ID will be updated in cases where ACCOUNT_TYPE is set to
+	 * non-local and GLOBAL_ID is GLOBAL_ID_PENDING. Or when SyncAdapter discovers
 	 * that the corresponding GLOBAL_ID does not exist anymore (e.g. a 
 	 * Facebook user is deleted).
 	 * 
 	 * <h1>Delete</h1>
 	 * Applications can delete people.<br />
-	 * If a record with ORIGIN="Private" is deleted it will be deleted
+	 * If a record with ACCOUNT_TYPE=ACCOUNT_TYPE_LOCAL is deleted it will be deleted
 	 * permanently. Otherwise deletion is marked and later handled by
 	 * the proper SyncAdapter.
 	 * <br />
-	 * SyncAdapters can delete people that have ORIGIN set to the 
-	 * adapter and that is already marked for deletion by the user.
+	 * SyncAdapters can delete people that have ACCOUNT_TYPE set to the 
+	 * adapter and that are already marked for deletion by the user.
 	 * 
 	 * <h1>Query</h1>
 	 * Applications can query for people using standard query URI or using _ID as
 	 * the last part of the URI.
 	 * 
 	 * 
-	 * @author Babak dot Farshchian at sintef dot no
+	 * @author Babak Farshchian
 	 */
-    public static final class People {
+    public static final class People implements SyncColumns{
         /**
          * The Uri to access the base table with all people.
          */
@@ -215,8 +245,9 @@ public final class SocialContract {
         /**
          *  Key local ID, used by content provider to denote the location of this
          *  person in the table. Row number.
+         *  <br />
+         *  Read-only.
          *  
-         *  Read-only
          */
         public static final String _ID = "_id";
         /**
@@ -224,44 +255,47 @@ public final class SocialContract {
          * 
          * Mandatory.
          * Read-only.
-         * 
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Name of the person. Mandatory.
+         *  <br />
+         * Type: TEXT
          */
         public static final String NAME = "name";
         /**
 		 * A description of the user. This is set locally.
 		 * Should not be synchronized.
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String DESCRIPTION = "description";
 		/**
          * Email address of the person. Optional.
+         *  <br />
+         * Type: TEXT
          */
         public static final String EMAIL = "email";
-        /**
-		 * Set by Sync adapter, telling the user where this person is 
-		 * synchronized from.
-		 * 
-		 * Can for instance be Facebook (if this is a Facebook contact)
-		 * or SOCIETIES etc.
-		 */
+
+        @Deprecated
 		public static final String ORIGIN = "origin";
 		/**
          * The date this record was created by its origin.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
         
         /**
          * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
-        /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services.
-         */
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
         
     }
@@ -286,7 +320,7 @@ public final class SocialContract {
 	 * <h1>Insert</h1> 
 	 * Applications can insert communities that will be confirmed
 	 * by SyncAdapters. While confirmation pending,
-	 *  {@link GLOBAL_ID} will be "pending".
+	 *  {@link GLOBAL_ID} will be GLOBAL_ID_PENDING.
 	 *  
 	 * Applications will have to provide the following
 	 * parameters in when inserting:
@@ -295,20 +329,17 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, will be set to "na" if not provided)
-	 * <li>{@link ORIGIN}
+	 * <li>{@link DESCRIPTION} (optional)
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
 	 * When an application inserts a community, {@link GLOBAL_ID} will be
-	 * set to "pending" by {@link SocialProvider}. This has to be changed
+	 * set to GLOBAL_ID_PENDING by {@link SocialProvider}. This has to be changed
 	 * by a SyncAdapter upon next successful synchronization. The sync
 	 * adapter then has to write the correct global_id. While a community
 	 * is pending it will not accept membership or sharing of services.
 	 * 
-	 * {@link ORIGIN} should be set a name that is recognizable by
-	 * the appropriate SyncAdapter. E.g. a Facebook SyncAdapter 
-	 * will read only those communities that have ORIGIN set to "Facebook". 
-	 * 
+     *  <br />
 	 * SyncAdapters cannot insert new communities.
 	 * 
 	 * <h1>Update</h1> 
@@ -328,23 +359,18 @@ public final class SocialContract {
 	 * 
 	 * <h1>Delete</h1>
 	 * Applications can delete communities. Only communities that belong to
-	 * the logged-in user can be deleted. When a community is deleted by 
-	 * an application it is only marked as deleted. It is then deleted
-	 * by the SyncAdapter, which also deletes all the memberships and 
-	 * sharings.
+	 * the logged-in user and that are empty can be deleted.
 	 * <br />
 	 * SyncAdapters can only delete communities that are marked for
-	 * deletion. Deleting a community by a SyncAdapter will also delete 
-	 * all the memberships and sharings for that community.
-	 * 
+	 * deletion. 
 	 * <h1>Query</h1>
 	 * Applications and SyncAdapters can query for communities using standard
 	 * query URI or using _ID as the last part of the URI.
      * 
-     * @author Babak dot Farshchian at sintef dot no
+     * @author Babak Farshchian
      *
      */
-    public static final class Communities {
+    public static final class Communities implements SyncColumns{
         /**
          * The Uri to access the base table with all communities. 
          */
@@ -353,49 +379,59 @@ public final class SocialContract {
         /**
          * Key local ID. Used by content provider as an index to the DB
          * table.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id"; 
         /**
          *  Global ID for the community, e.g. JID or URI.
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
 		 *  Name of the community. Is user-given.
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String NAME = "name";
 		/**
 		 * Global ID of the person who owns this community.
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String OWNER_ID = "owner_id";
 		/**
          *  The type of the community being stored. E.g. "disaster".
          *  The type will be defined and used by applications.
+         *  <br />
+         * Type: TEXT
          */
         public static final String TYPE = "type";
         /**
 		 * A user-provided description of the community.
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String DESCRIPTION = "description";
-		/**
-         * Set by user or Sync adapter, telling the user where this community
-         * is originating from. Can for instance be Facebook (if this is a 
-         * Facebook group) or SOCIETIES etc.
-         */
+
+		@Deprecated
         public static final String ORIGIN = "origin";
         /**
          * The date this record was created by its origin.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
         
         /**
          * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
-        /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services. Its value can be "dirty", "clean", "new", "deleted".
-         */
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
         
     }
@@ -418,23 +454,23 @@ public final class SocialContract {
 	 * 
 	 * <h1>Insert</h1> 
 	 * Applications can insert services. Applications will have to provide the following
-	 * parameters in when inserting services:
+	 * parameters when inserting services:
 	 * <ul>
 	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, set to "NA" if not provided)
+	 * <li>{@link DESCRIPTION} (optional, set to VALUE_NOT_DEFINED if not provided)
 	 * <li>{@link APP_TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional, set to "NA" if not provided)
-	 * <li>{@link CONFIG} (Optional, set to "NA" if not provided)
-	 * <li>{@link URL} (Optional, set to "NA" if not provided)
+	 * <li>{@link DEPENDENCY} (Optional, set to VALUE_NOT_DEFINED if not provided)
+	 * <li>{@link CONFIG} (Optional, set to VALUE_NOT_DEFINED if not provided)
+	 * <li>{@link URL} (Optional, set to VALUE_NOT_DEFINED if not provided)
 	 * </ul>
 	 * 
-	 * When an application inserts a service, GLOBAL_ID will be
-	 * set to "Pending" by {@link SocialProvider}. This has to be changed
+	 * When an application inserts a non-local row, GLOBAL_ID will be
+	 * set to GLOBAL_ID_PENDING by {@link SocialProvider}. This has to be changed
 	 * by a SyncAdapter upon next successful synchronization. A valid
 	 * GLOBAL_ID has to be written back.
 	 * 
@@ -445,18 +481,14 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, set to "NA" if not provided)
+	 * <li>{@link DESCRIPTION} (optional, set to VALUE_NOT_DEFINED if not provided)
 	 * <li>{@link APP_TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional, set to "NA" if not provided)
-	 * <li>{@link CONFIG} (Optional, set to "NA" if not provided)
-	 * <li>{@link URL} (Optional, set to "NA" if not provided)
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
+	 * <li>{@link DEPENDENCY} (Optional, set to VALUE_NOT_DEFINED if not provided)
+	 * <li>{@link CONFIG} (Optional, set to VALUE_NOT_DEFINED if not provided)
+	 * <li>{@link URL} (Optional, set to VALUE_NOT_DEFINED if not provided)
 	 * </ul>
-	 * 
-	 * SYNC_STATUS has to be set to "updated". 
 	 * 
 	 * <h1>Update</h1> 
 	 * Applications can update:
@@ -464,7 +496,7 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link DESCRIPTION}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * <li>{@link AVAILABLE}
 	 * <li>{@link DEPENDENCY}
 	 * <li>{@link CONFIG}
@@ -476,16 +508,13 @@ public final class SocialContract {
 	 * <li>{@link NAME}
 	 * <li>{@link OWNER_ID}
 	 * <li>{@link DESCRIPTION}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * <li>{@link AVAILABLE}
 	 * <li>{@link DEPENDENCY}
 	 * <li>{@link CONFIG}
 	 * <li>{@link URL}
-	 * <li>{@link CREATION_DATE}
-	 * <li>{@link SYNC_STATUS}
 	 * </ul>
 	 * 
-	 * SYNC_STATUS has to be set to "updated".
 	 * 
 	 * <h1>Delete</h1>
 	 * Applications can delete services. Only services that belong to
@@ -499,11 +528,11 @@ public final class SocialContract {
 	 * Applications and SyncAdapters can query for services using standard
 	 * query URI or using _ID as the last part of the URI.
      * 
-     * @author Babak dot Farshchian at sintef dot no
+     * @author Babak Farshchian
      *
      */
     
-    public static final class Services {
+    public static final class Services implements SyncColumns{
         /**
          * Use this Uri to search in the content provider.
          */
@@ -512,20 +541,28 @@ public final class SocialContract {
         /**
          * Key local ID used by content provider. Index to the
          *  table holding service info.
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id";
         /**
          *  Global ID for the service. E.g. packagename+appname in Android.
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
 		 *  User/provided name of the service, e.g. "iDisaster" or "iJacket".
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String NAME = "name";
 		/**
 		 * Global ID of the person who owns this service. This can be your own
 		 * Global ID if you own the service, or someone else's global ID if 
 		 * you find a service e.g. on a market place.
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String OWNER_ID = "owner_id";
 		/**
@@ -533,21 +570,27 @@ public final class SocialContract {
          *  name, which can be the name given by the client application.
          *  E.g. iDisaster and other crisis management applications can
          *  assign TYPE to be "disaster".
+         *  <br />
+         * Type: TEXT
          */
         public static final String TYPE = "type";
         /**
 		 * A user-provided description of the service.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String DESCRIPTION = "description";
 		/**
          *  This is a parameter that can be used to define the technical
          *  type of the service. It can for instance be set to "android_application"
          *  or "virgo_service" etc.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
-        public static final String APP_TYPE = "type";
-        /**
-         * Where this service comes from, e.g. Android Market.
-         */
+        public static final String APP_TYPE = "app_type";
+        @Deprecated
         public static final String ORIGIN = "origin";
         /**
 		 * Tells whether this service is available on this device.
@@ -559,38 +602,53 @@ public final class SocialContract {
 		 *  set to "0".
 		 * 
 		 * Value needs to be set and kept updated by clients.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
 		 */
 		public static final String AVAILABLE = "available";
 		/**
 		 * A field telling whether this service depends on another 
 		 * service to function. The value is the global ID of the
 		 * other service or null.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String DEPENDENCY = "dependency";
 		/**
 		 * String that contains the intent to be used to launch the service
-		 * using Androdi intent mechanism.
+		 * using Androdid intent mechanism.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String CONFIG = "config";
 		/**
 		 * A URL to the code to be downloaded or to a web service interface.
 		 * This can for instance be a link to an Android App.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 		 */
 		public static final String URL = "url";
 		/**
          * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
         
         /**
          * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
-        /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services. Its value can be "dirty", "clean", "new", "deleted".
-         */
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
     }
     
@@ -608,7 +666,7 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_P1}
 	 * <li>{@link GLOBAL_ID_P2}
 	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
 	 * GLOBAL_ID_P1 and GLOBAL_ID_P2 have to exist among the user's People.<br/>
@@ -653,7 +711,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Relationship {
+    public static final class Relationship implements SyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.RELATIONSHIP);
 
@@ -664,24 +722,49 @@ public final class SocialContract {
         public static final String _ID = "_id"; 
         /**
          * Global ID for the relationship.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the first person in the relationship.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_P1 = "global_id_p1";
         /**
          * Global ID for the second person in the relationship.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_P2 = "global_id_p2";
         /**
          * Type of the relationship. Can be e.g. friend, follower.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String TYPE = "type"; 
-        /**
-         *  The original service where the relationship is defined.
-         *  E.g. Facebook, SOCIETIES
+		/**
+         * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
+        public static final String CREATION_DATE = "creation_date";
+        
+        /**
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+        @Deprecated
         public static final String ORIGIN = "origin";
     }
     /**
@@ -710,7 +793,7 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_MEMBER}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
 	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
 	 * The membership will be created only if the member is among user's People and
@@ -726,7 +809,7 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_MEMBER}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
 	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * The membership will be inserted only if GLOBAL_ID_MEMBER is an ID of the 
 	 * current user, or the user owns or is a member of GLOBAL_ID_COMMUNITY.
@@ -764,7 +847,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Membership {
+    public static final class Membership implements SyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.MEMBERSHIP);
 
@@ -772,29 +855,58 @@ public final class SocialContract {
          * Key local ID for this membership. Needed for using 
          * content providers in Android. Note that _id is
          * unique only locally on this device.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id"; 
         /**
          * Global ID for the membership.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the member.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_MEMBER = "global_id_member";
         /**
          * Global ID for the community.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
         /**
          * Type of the membership. Application-defined. Can be used as
          * e.g. role in the community.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String TYPE = "type"; 
-        /**
-         *  The original service where the membership is defined.
-         *  E.g. Facebook, SOCIETIES
+		/**
+         * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
+        public static final String CREATION_DATE = "creation_date";
+        
+        /**
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+
+        @Deprecated
         public static final String ORIGIN = "origin";
     }
     
@@ -821,7 +933,7 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_SERVICE}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
 	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
 	 * <br/>
@@ -833,7 +945,7 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_SERVICE}
 	 * <li>{@link GLOBAL_ID_COMMUNITY}
 	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * <h1>Update</h1> 
 	 * Applications can update:
@@ -866,7 +978,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Sharing {
+    public static final class Sharing implements SyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.SHARING);
 
@@ -874,32 +986,64 @@ public final class SocialContract {
          * Key local ID for this sharing. Needed for using 
          * content providers in Android. Note that _id is
          * unique only locally on this device.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id"; 
         /**
          * Global ID for the sharing.
-         */
+          *  <br />
+         *  <br />
+         * Type: TEXT
+        */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the service.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_SERVICE = "global_id_service";
         /**
-         * Global ID for the sharing.
-         */
+         * Global ID for the owner.
+          *  <br />
+         *  <br />
+         * Type: TEXT
+        */
         public static final String GLOBAL_ID_OWNER = "global_id_owner";
         /**
          * Global ID for the community.
-         */
+          *  <br />
+         *  <br />
+         * Type: TEXT
+        */
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
         /**
          * Type of the sharing. Application-defined.
-         */
+          *  <br />
+         *  <br />
+         * Type: TEXT
+        */
         public static final String TYPE = "type"; 
         /**
-         *  The original service where the sharing is defined.
-         *  E.g. Facebook, SOCIETIES
-         */
+         * The date this record was created by its origin.
+          *  <br />
+         *  <br />
+         * Type: INTEGER
+        */
+        public static final String CREATION_DATE = "creation_date";
+        
+        /**
+         * The date this record was last modified. Used by sync adapters.
+           *  <br />
+         *  <br />
+         * Type: INTEGER
+       */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+
+        @Deprecated
         public static final String ORIGIN = "origin";
     }
     
@@ -918,13 +1062,13 @@ public final class SocialContract {
 	 * <li>{@link GLOBAL_ID_OBJECT}
 	 * <li>{@link GLOBAL_ID_VERB}
 	 * <li>{@link GLOBAL_ID_TARGET}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class PeopleActivity{
+    public static final class PeopleActivity implements SyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.PEOPLE_ACTIVITIY);
         /**
@@ -932,49 +1076,71 @@ public final class SocialContract {
          * content providers in Android. Note that _id is
          * unique only locally on this device.
          * 
-         * Note: CREATION_DATE, and SYNC_STATUS are set by SocialProvider.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id"; 
         /**
          * Global ID for the activity.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner of the feed where the
          * activity is added. Has to identify a record in
          * People.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
         /**
-         * Global ID for the Actor of the activity.
+         * Actor of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_ACTOR = "global_id_ACTOR";
+        public static final String ACTOR = "actor";
         /**
-         * Global ID for the object of the activity.
+         * Object of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_OBJECT = "global_id_object";
+        public static final String OBJECT = "object";
         /**
-         * Global ID for the verb of the activity.
+         * Verb of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_VERB = "global_id_verb";
+        public static final String VERB = "verb";
         /**
-         * Global ID for the target of the activity.
+         * Target of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_TARGET = "global_id_target";
-        /**
-         *  The original service where the activity was created.
-         *  E.g. Facebook, SOCIETIES
-         */
+        public static final String TARGET = "target";
+        @Deprecated
         public static final String ORIGIN = "origin";	
-        /**
-         * The date this activity was created.
+		/**
+         * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
-
+        
         /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services.
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
         
 
@@ -989,56 +1155,77 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class CommunityActivity{
+    public static final class CommunityActivity implements SyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.COMMUNITY_ACTIVITIY);
         /**
          * Key local ID for the activity. Needed for using 
          * content providers in Android. Note that _id is
          * unique only locally on this device.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          * 
-         * Note: CREATION_DATE, and SYNC_STATUS are set by SocialProvider.
          */
         public static final String _ID = "_id"; 
         /**
          * Global ID for the activity.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner community of the feed where the
          * activity is added.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
         /**
-         * Global ID for the Actor of the activity.
+         * Actor of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_ACTOR = "global_id_ACTOR";
+        public static final String ACTOR = "actor";
         /**
-         * Global ID for the object of the activity.
+         * Object of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_OBJECT = "global_id_object";
+        public static final String OBJECT = "object";
         /**
-         * Global ID for the verb of the activity.
+         * Verb of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_VERB = "global_id_verb";
+        public static final String VERB = "verb";
         /**
-         * Global ID for the target of the activity.
+         * Target of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_TARGET = "global_id_target";
-        /**
-         *  The original service where the activity was created.
-         *  E.g. Facebook, SOCIETIES
-         */
+        public static final String TARGET = "target";
+        @Deprecated
         public static final String ORIGIN = "origin";	
-        /**
-         * The date this activity was created.
+		/**
+         * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
-
+        
         /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services.
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
     }
     /**
@@ -1050,56 +1237,76 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class ServiceActivity{
+    public static final class ServiceActivity implements SyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.SERVICE_ACTIVITY);
         /**
          * Key local ID for the activity. Needed for using 
          * content providers in Android. Note that _id is
          * unique only locally on this device.
-         * 
-         * Note: CREATION_DATE, and SYNC_STATUS are set by SocialProvider.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String _ID = "_id"; 
         /**
          * Global ID for the activity.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner service of the feed where the
          * activity is added.
+         *  <br />
+         *  <br />
+         * Type: TEXT
          */
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
         /**
-         * Global ID for the Actor of the activity.
+         * Actor of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_ACTOR = "global_id_ACTOR";
+        public static final String ACTOR = "actor";
         /**
-         * Global ID for the object of the activity.
+         * Object of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_OBJECT = "global_id_object";
+        public static final String OBJECT = "object";
         /**
-         * Global ID for the verb of the activity.
+         * Verb of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_VERB = "global_id_verb";
+        public static final String VERB = "verb";
         /**
-         * Global ID for the target of the activity.
+         * Target of the activity.
+         * <br />
+         * Type: TEXT
          */
-        public static final String GLOBAL_ID_TARGET = "global_id_target";
-        /**
-         *  The original service where the activity was created.
-         *  E.g. Facebook, SOCIETIES
-         */
+        public static final String TARGET = "target";
+        @Deprecated
         public static final String ORIGIN = "origin";	
-        /**
-         * The date this activity was created.
+		/**
+         * The date this record was created by its origin.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
         public static final String CREATION_DATE = "creation_date";
-
+        
         /**
-         * Field used by sync adapters when synchronizing with cloud 
-         * services.
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
          */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+        @Deprecated
         public static final String SYNC_STATUS = "sync_status";
     }
 
@@ -1133,7 +1340,7 @@ public final class SocialContract {
 	 * <li>{@link DISPLAY_NAME} (Optional, set to "NA" if not provided)
 	 * <li>{@link USER_NAME}
 	 * <li>{@link PASSWORD}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 *  
 	 * <h1>Update</h1> 
@@ -1144,7 +1351,7 @@ public final class SocialContract {
 	 * <li>{@link DISPLAY_NAME}
 	 * <li>{@link USER_NAME}
 	 * <li>{@link PASSWORD}
-	 * <li>{@link ORIGIN}
+	 * <li>{@link ACCOUNT_TYPE}
 	 * </ul>
 	 * 
 	 * <h1>Delete</h1>
@@ -1158,40 +1365,72 @@ public final class SocialContract {
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
 	 */
-	public static final class Me {
+	public static final class Me implements SyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.ME);
 	
 	    /**
 	     * Key local ID. Needed for using cursors in Android. Note that _id is
 	     * unique only locally on this device.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
 	     */
 	    public static final String _ID = "_id"; 
 	    /**
 	     * Global ID for my identity, e.g. JID.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 	     */
 	    public static final String GLOBAL_ID = "global_id";
 	    /**
-	     * My name to be used with this CSS ID.
+	     * My name to be used with this ID.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 	     */
 	    public static final String NAME = "name"; 
 	    /**
 	     *  My alternative name, e.g. nickname.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 	     */
 	    public static final String DISPLAY_NAME = "display_name";
 	    /**
-	     *  Login user name if different from GLOBAL_ID
+	     *  Login user name.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 	     */
 	    public static final String USER_NAME = "user_name";
 	    /**
-	     *  Possible password to be used with user name
+	     *  Possible password to be used with user name.
+         *  <br />
+         *  <br />
+         * Type: TEXT
 	     */
 	    public static final String PASSWORD = "password";
 	    
-	    /**
-	     * Name of the service this ID was created at. E.g. it might be 
-	     * a Facebook ID or a SOCIETIES ID. 
-	     */
+		/**
+         * The date this record was created by its origin.
+          *  <br />
+         *  <br />
+         * Type: INTEGER
+        */
+        public static final String CREATION_DATE = "creation_date";
+        
+        /**
+         * The date this record was last modified. Used by sync adapters.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+
+
+	    @Deprecated
 	    public static final String ORIGIN = "origin";
 	}
 
@@ -1202,7 +1441,7 @@ public final class SocialContract {
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
 	 */
-	public static final class UriMatcherIndex{
+	protected static final class UriMatcherIndex{
 		public static final int ME = 1;
 		public static final int ME_SHARP = 2;
 		public static final int PEOPLE = 3;
@@ -1225,5 +1464,45 @@ public final class SocialContract {
 		public static final int SERVICE_ACTIVITY_SHARP = 20;
 
 	}
-    
+ 
+	/**
+	 * These columns are used by Sync Adapters to synchronize 
+	 * database content. Their use needs to be consistent by
+	 * apps and sync adapters.
+	 * 
+	 * Note: This interface is based on Android class CalendarContract.
+	 * 
+	 * @author Babak Farshchian
+	 *
+	 */
+	public interface SyncColumns{
+		/**
+		 * The account that was used to sync the entry to the device.
+		 * <br />
+		 * Type: TEXT
+		 */
+		public static final String ACCOUNT_NAME ="account_name";
+		/**
+		 * The type of the account that was used to sync the entry to the device.
+		 * Set this to "LOCAL" if the field is not to be synced.
+		 * <br />
+		 * Type: TEXT
+		 */
+		public static final String ACCOUNT_TYPE ="account_type";
+		
+		/**
+		 * Boolean value telling whether the row is deleted but not 
+		 * synced.
+		 * <br />
+		 * Type: INTEGER (boolean) 
+		 */
+		public static final String  DELETED = "deleted";
+		/**
+		 * Used to indicate that local, unsynced, changes are present. 
+		 * <br />
+		 * Type: INTEGER (long)
+		 */
+		public static final String  DIRTY = "dirty";
+				
+	}
 }
