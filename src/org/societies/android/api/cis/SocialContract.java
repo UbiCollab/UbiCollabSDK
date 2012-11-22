@@ -113,7 +113,7 @@ public final class SocialContract {
 	 * @author Babak Farshchian
 	 *
 	 */
-	protected static final class UriPathIndex{
+	public static final class UriPathIndex{
 		
 		/**
 		 * Path segment for searching for all my identities/user profiles.
@@ -1441,7 +1441,7 @@ public final class SocialContract {
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
 	 */
-	protected static final class UriMatcherIndex{
+	public static final class UriMatcherIndex{
 		public static final int ME = 1;
 		public static final int ME_SHARP = 2;
 		public static final int PEOPLE = 3;
