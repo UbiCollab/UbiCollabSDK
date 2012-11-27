@@ -236,7 +236,8 @@ public final class SocialContract {
 	 * 
 	 * @author Babak Farshchian
 	 */
-    public static final class People implements SyncColumns{
+    public static final class People implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns{
         /**
          * The Uri to access the base table with all people.
          */
@@ -370,7 +371,8 @@ public final class SocialContract {
      * @author Babak Farshchian
      *
      */
-    public static final class Communities implements SyncColumns{
+    public static final class Communities implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns {
         /**
          * The Uri to access the base table with all communities. 
          */
@@ -532,7 +534,8 @@ public final class SocialContract {
      *
      */
     
-    public static final class Services implements SyncColumns{
+    public static final class Services implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns{
         /**
          * Use this Uri to search in the content provider.
          */
@@ -711,7 +714,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Relationship implements SyncColumns{
+    public static final class Relationship implements SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.RELATIONSHIP);
 
@@ -847,7 +850,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Membership implements SyncColumns{
+    public static final class Membership implements SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.MEMBERSHIP);
 
@@ -978,7 +981,7 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Sharing implements SyncColumns{
+    public static final class Sharing implements SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.SHARING);
 
@@ -1068,7 +1071,8 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class PeopleActivity implements SyncColumns{
+    public static final class PeopleActivity implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.PEOPLE_ACTIVITIY);
         /**
@@ -1155,7 +1159,8 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class CommunityActivity implements SyncColumns{
+    public static final class CommunityActivity implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.COMMUNITY_ACTIVITIY);
         /**
@@ -1237,7 +1242,8 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class ServiceActivity implements SyncColumns{
+    public static final class ServiceActivity implements SyncColumns, BaseSyncColumns,
+    RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.SERVICE_ACTIVITY);
         /**
@@ -1365,7 +1371,7 @@ public final class SocialContract {
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
 	 */
-	public static final class Me implements SyncColumns{
+	public static final class Me implements SyncColumns, BaseSyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.ME);
 	
@@ -1496,13 +1502,81 @@ public final class SocialContract {
 		 * <br />
 		 * Type: INTEGER (boolean) 
 		 */
-		public static final String  DELETED = "deleted";
+		public static final String DELETED = "deleted";
 		/**
-		 * Used to indicate that local, unsynced, changes are present. 
-		 * <br />
-		 * Type: INTEGER (long)
+		* Used to indicate that local, unsynced, changes are present.
+		* <br />
+		* Type: INTEGER (long)
+		*/
+		public static final String DIRTY = "dirty";
+	}
+	
+
+
+		/**
+		 * These columns are privately used by sync adapters
+		 * and should not be used by applications. Sync adapters
+		 * can choose to use them in any way they want.
+		 * 
+		 * Note: This interface is based on Android class CalendarContract.
+		 * 
+		 * @author Babak Farshchian
+		 *
 		 */
-		public static final String  DIRTY = "dirty";
-				
+	public interface BaseSyncColumns{
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: TEXT
+		 */
+		public static final String SYNC1 ="sync1";
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: TEXT
+		 */
+		public static final String SYNC2 ="sync2";
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: TEXT
+		 */
+		public static final String  SYNC3 = "sync3";
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: INTEGER
+		 */
+		public static final String  SYNC4 = "sync4";
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: INTEGER
+		 */
+		public static final String  SYNC5 = "sync5";
+		/**
+		 * Generic column for use by sync adapters.
+		 * <br />
+		 * Type: INTEGER
+		 */
+		public static final String  SYNC6 = "sync6";
+	}
+	/**
+	 * These columns can be used by services to set data 
+	 * related to how they want to recommend various 
+	 * data types to the user.
+	 * 
+	 * @author Babak Farshchian
+	 *
+	 */
+	public interface RecommendationColumns{
+		/**
+		 * An integer 0-100 that gives an indication of how
+		 * relevant the current row is for the user.
+		 * <br />
+		 * Type: INTEGER
+		 */
+		public static final String  RELEVANCE = "relevance";
 	}
 }
+	
