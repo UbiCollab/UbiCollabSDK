@@ -404,6 +404,12 @@ public final class SocialContract {
 		 */
 		public static final String OWNER_ID = "owner_id";
 		/**
+		 * Global ID of the person who owns this community.
+         *  <br />
+         * Type: TEXT
+		 */
+		public static final String _ID_OWNER = "_id_owner";
+		/**
          *  The type of the community being stored. E.g. "disaster".
          *  The type will be defined and used by applications.
          *  <br />
@@ -567,7 +573,16 @@ public final class SocialContract {
          *  <br />
          * Type: TEXT
 		 */
+		@Deprecated
 		public static final String OWNER_ID = "owner_id";
+		/**
+		 * _ID of the person who owns this service. This can be your own
+		 * _ID if you own the service, or someone else's _ID if 
+		 * you find a service e.g. on a market place.
+         *  <br />
+         * Type: INTEGER
+		 */
+		public static final String _ID_OWNER = "_id_owner";
 		/**
          *  The type of the service being stored. This is a user-provided
          *  name, which can be the name given by the client application.
@@ -731,19 +746,35 @@ public final class SocialContract {
          */
         public static final String GLOBAL_ID = "global_id";
         /**
-         * Global ID for the first person in the relationship.
+         * Use _ID_P1 instead.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_P1 = "global_id_p1";
         /**
-         * Global ID for the second person in the relationship.
+         * _ID for the first person in the relationship.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_P1 = "_id_p1";
+        /**
+         * Use _ID_P2 instead.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_P2 = "global_id_p2";
+        /**
+         * _ID for the second person in the relationship.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_P2 = "_id_p2";
         /**
          * Type of the relationship. Can be e.g. friend, follower.
          *  <br />
@@ -871,19 +902,41 @@ public final class SocialContract {
          */
         public static final String GLOBAL_ID = "global_id";
         /**
-         * Global ID for the member.
+         * Deprecated. Use _ID_MEMBER and look up the member
+         * in People table.
+         * 
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_MEMBER = "global_id_member";
         /**
-         * Global ID for the community.
+         * _ID for the member. Can be looked up in People table.
+         * 
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_MEMBER = "_id_member";
+        /**
+         * Deprecated. Use _ID_COMMUNITY and look up the community
+         * in the Communities table.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
+        
+        /**
+         * _ID for the community. Can be looked up in People table.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         * 
+         */
+        public static final String _ID_COMMUNITY = "_id_community";
         /**
          * Type of the membership. Application-defined. Can be used as
          * e.g. role in the community.
@@ -1002,26 +1055,50 @@ public final class SocialContract {
         */
         public static final String GLOBAL_ID = "global_id";
         /**
-         * Global ID for the service.
+         * Use _ID_SERVICE instead.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_SERVICE = "global_id_service";
         /**
-         * Global ID for the owner.
+         * _ID for the service.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_SERVICE = "_id_service";
+        /**
+         * Use _ID_OWNER instead.
           *  <br />
          *  <br />
          * Type: TEXT
         */
+        @Deprecated
         public static final String GLOBAL_ID_OWNER = "global_id_owner";
         /**
-         * Global ID for the community.
+         * _ID for the owner. Can be looked up in People table.
+          *  <br />
+         *  <br />
+         * Type: INTEGER
+        */
+        public static final String _ID_OWNER = "_id_owner";
+        /**
+         * Use ID_COMMUNITY instead.
           *  <br />
          *  <br />
          * Type: TEXT
         */
+        @Deprecated
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
+        /**
+         * _ID for the community.
+          *  <br />
+         *  <br />
+         * Type: INTEGER
+        */
+        public static final String _ID_COMMUNITY = "_id_community";
         /**
          * Type of the sharing. Application-defined.
           *  <br />
@@ -1100,7 +1177,17 @@ public final class SocialContract {
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
+        /**
+         * _ID for the owner of the feed where the
+         * activity is added. Identifies a record in
+         * People table.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
          * Actor of the activity.
          * <br />
@@ -1183,11 +1270,26 @@ public final class SocialContract {
         /**
          * Global ID for the owner community of the feed where the
          * activity is added.
+         * 
+         * @deprecated 
+         * 
+         * Use _ID_FEED_OWNER instead and look up the 
+         * global ID in the Community table.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
+        /**
+         * Global ID for the owner community of the feed where the
+         * activity is added.
+         * 
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
          * Actor of the activity.
          * <br />
@@ -1263,13 +1365,21 @@ public final class SocialContract {
          */
         public static final String GLOBAL_ID = "global_id";
         /**
-         * Global ID for the owner service of the feed where the
-         * activity is added.
+         * Use _ID_FEED_OWNER instead.
          *  <br />
          *  <br />
          * Type: TEXT
          */
+        @Deprecated
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
+        /**
+         * _ID for the owner service of the feed where the
+         * activity is added. Can be looked up in Services table.
+         *  <br />
+         *  <br />
+         * Type: INTEGER
+         */
+        public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
          * Actor of the activity.
          * <br />
