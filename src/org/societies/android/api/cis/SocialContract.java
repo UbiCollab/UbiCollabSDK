@@ -44,6 +44,10 @@ import android.net.Uri;
  * @author Babak Farshchian
  *
  */
+/**
+ * @author babak
+ *
+ */
 public final class SocialContract {
 
 	/**
@@ -60,20 +64,26 @@ public final class SocialContract {
     
     /**
      * A special account type used for fields that are not
-     * supposed to be synced. See also {@link SynchColumns}.
+     * supposed to be synchronized with a remote service.
+     * See also {@link SynchColumns}. You can use this if 
+     * you want to use the content provider for storing 
+     * local data.
      * 
-     * When you store something in a row that you don't want
-     * to be synced, set its ACCOUNT_TYPE to this. 
      */
     public static final String ACCOUNT_TYPE_LOCAL = "LOCAL";
     
     
     /**
-     * Is used when setting global ID for newly created rows.
-     * If the row is syncable the global ID has to be replaced
+     * When you add a new row to the content provider, its 
+     * GLOBAL_ID can be set to GLOBAL_ID_PENDING. This 
+     * means that the row is not yet synchronized with a remote
+     * service. 
+     * <br /><br />
+     * If the row is synch-able the GLOBAL_ID has to be replaced
      * with a proper global ID upon a successful first sync.
      * If the row is private, the global ID will always 
-     * be pending, i.e. it should not be used. 
+     * be pending, i.e. it should not be used. This is the
+     * case where ACCOUNT_TYPE is set to ACCOUNT_TYPE_LOCAL. 
      */
     public static final String GLOBAL_ID_PENDING = "PENDING";
     
@@ -81,7 +91,13 @@ public final class SocialContract {
      * A constant that is used to set the value for the optional
      * fields in case the user does not set them.
      */
-    public static final String VALUE_NOT_DEFINED = "NA";
+    public static final String VALUE_NOT_DEFINED = "UNKNOWN";
+    
+    /**
+     * Default date when setting default values in the DB. It is set
+     * to the now.
+     */
+    public static final String DEFAULT_NOW_DATE = "(strftime('%s','now'))";
     
     /**
      * An optional insert, update or delete URI parameter that 
@@ -92,9 +108,13 @@ public final class SocialContract {
      * <br /><br />
      * If set to true, the caller must also include 
      * ACCOUNT_NAME and ACCOUNT_TYPE as query parameters.
+     * <br /><br />
+     * This parameter is of interest only for synch adapter 
+     * developers. See https://github.com/UbiCollab/UbiShare/issues/19.
      * 
      */
     public static final String CALLER_IS_SYNCADAPTER = "caller_is_syncadapter";
+        
     /**
      * Constant used to define read permission for SocialProvider data:
      */
@@ -151,9 +171,9 @@ public final class SocialContract {
 	 * This is the URI you will use for accessing information about people.
 	 * Every person who is accessible from {@link SocialProvider} and is
 	 * considered to be of interest to the user has an
-	 * entry in this table. You can search for people using global_id, 
+	 * entry in this table. You can search for people using id, 
 	 * name etc.
-	 * <br />
+	 * <br /><br />
 	 * You can find information about both of the following:
 	 * <ul>
 	 * <li>People you have a relationship to. This means both of you use 
@@ -162,42 +182,53 @@ public final class SocialContract {
 	 * <li>People you don't have a relationship to but want to keep
 	 * informed about. This might be Obama or your neighbor. The information
 	 * about this type of people will not be verifiable and will probably
-	 * be very inaccurate.</li>
+	 * be very inaccurate. Depending on how it is synced.</li>
 	 * </ul>
 	 * Each row has a GLOBAL_ID that is set by the account which syncs
 	 * the row. If the account is ACCOUNT_TYPE_LOCAL, the row will not be 
 	 * synced with any service. For local rows GLOBAL_ID is always 
 	 * GLOBAL_ID_PENDING. Also if you add a new row with account type
 	 * e.g. "Facebook", the row will have GLOBAL ID set to
-	 * GLOBAL_ID_PENDING until the first sync assigns a real "Facebook" ID.
+	 * GLOBAL_ID_PENDING until the first sync assigns a real "Facebook" ID. 
+	 * This will happen if you for instance add a new user locally
+	 * and want to synch it with a Facebook friend you already have.
+	 * <br /><br />
+	 * 
 	 * 
 	 * <h1>Insert</h1> 
-	 * Applications can insert people by providing the following:
+	 * Applications can insert people by providing one or more of 
+	 * the following when calling insert():
 	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
+	 * <li>{@link GLOBAL_ID}
 	 * <li>{@link NAME}
-	 * <li>{@link DESCRIPTION} (Optional)
-	 * <li>{@link EMAIL} (Optional)
+	 * <li>{@link DESCRIPTION}
+	 * <li>{@link EMAIL}
 	 * <li>{@link ACCOUNT_TYPE}
+	 * <li>{@link ACCOUNT_NAME}
 	 * </ul>
-	 * Note that it is important to provide the ACCOUNT_TYPE so that Syncing with
-	 * services can update a new people record to a real person if this is 
+	 * Note that it is important to provide the ACCOUNT_TYPE and ACCOUNT_NAME 
+	 * so that Syncing with services can update a new people record to 
+	 * a real person if this is 
 	 * needed. The value of the ACCOUNT_TYPE field depends on the target SyncAdapter.
 	 * It might for instance be "Facebook". See proper SyncAdapter documentation.
 	 * <br />
 	 * If ACCOUNT_TYPE is set to ACCOUNT_TYPE_LOCAL the newly created person
 	 * will not be updated by SyncAdapters. This can be used for building
-	 * a private address book within People part of SocialProvider.
+	 * a private address book within People part of SocialProvider. In this case 
+	 * the GLOBAL_ID is set to GLOBAL_ID_PENDING by default.
 	 * <br /> 
-	 * SyncAdapters will not insert or delete people, they will only update.
+	 * 
 	 * 
 	 * <h1>Update</h1> 
 	 * Applications can update:
 	 * <ul>
+	 * <li>{@link GLOBAL_ID}
 	 * <li>{@link NAME}
 	 * <li>{@link DESCRIPTION}
 	 * <li>{@link EMAIL}
 	 * <li>{@link ACCOUNT_TYPE}
+	 * <li>{@link ACCOUNT_NAME}
+	 * <li>{@link LAST_MODIFIED_DATE}
 	 * </ul>
 	 * 
 	 * Pay attention to ACCOUNT_TYPE.<br />
@@ -236,65 +267,77 @@ public final class SocialContract {
 	 * 
 	 * @author Babak Farshchian
 	 */
-    public static final class People implements SyncColumns, BaseSyncColumns,
+    public static final class People implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns{
         /**
          * The Uri to access the base table with all people.
          */
         public static final Uri CONTENT_URI = 
                     Uri.parse(AUTHORITY_STRING+ UriPathIndex.PEOPLE);
-        /**
-         *  Key local ID, used by content provider to denote the location of this
-         *  person in the table. Row number.
+       /**
+         * Name of the person.
          *  <br />
-         *  Read-only.
-         *  
-         */
-        public static final String _ID = "_id";
-        /**
-         * ID which globally identifies this person. 
-         * 
-         * Mandatory.
-         * Read-only.
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
-        /**
-         * Name of the person. Mandatory.
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String NAME = "name";
         /**
-		 * A description of the user. This is set locally.
-		 * Should not be synchronized.
+		 * A description of the person.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         * </ul>
 		 */
 		public static final String DESCRIPTION = "description";
 		/**
-         * Email address of the person. Optional.
+         * Email address of the person.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String EMAIL = "email";
+        public static final String EMAIL2 = "email2";
+        public static final String EMAIL3 = "email3";
+
+		/**
+         * Phone number for the person.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String PHONE = "phone";
+        public static final String PHONE2 = "phone2";
+        public static final String PHONE3 = "phone3";
+		/**
+         * Physical address of the person.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String ADDRESS = "address";
 
         @Deprecated
 		public static final String ORIGIN = "origin";
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -371,7 +414,7 @@ public final class SocialContract {
      * @author Babak Farshchian
      *
      */
-    public static final class Communities implements SyncColumns, BaseSyncColumns,
+    public static final class Communities implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns {
         /**
          * The Uri to access the base table with all communities. 
@@ -379,65 +422,69 @@ public final class SocialContract {
         public static final Uri CONTENT_URI = 
                     Uri.parse(AUTHORITY_STRING+ UriPathIndex.COMMUNITIES);
         /**
-         * Key local ID. Used by content provider as an index to the DB
-         * table.
+         * Name of the community.
          *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
-        public static final String _ID = "_id"; 
-        /**
-         *  Global ID for the community, e.g. JID or URI.
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
-        /**
-		 *  Name of the community. Is user-given.
-         *  <br />
-         * Type: TEXT
-		 */
 		public static final String NAME = "name";
 		/**
 		 * Global ID of the person who owns this community.
+		 * <br /><br />
+		 * Deprecated. Use _ID_OWNER and look up global ID in
+		 * the People table.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
+		@Deprecated
 		public static final String OWNER_ID = "owner_id";
 		/**
-		 * Global ID of the person who owns this community.
+		 * _ID of the person who owns this community. Is used as foreign
+		 * key to look up a row in the People table.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String _ID_OWNER = "_id_owner";
 		/**
          *  The type of the community being stored. E.g. "disaster".
          *  The type will be defined and used by applications.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TYPE = "type";
         /**
 		 * A user-provided description of the community.
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String DESCRIPTION = "description";
 
 		@Deprecated
         public static final String ORIGIN = "origin";
-        /**
-         * The date this record was created by its origin.
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -540,7 +587,7 @@ public final class SocialContract {
      *
      */
     
-    public static final class Services implements SyncColumns, BaseSyncColumns,
+    public static final class Services implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns{
         /**
          * Use this Uri to search in the content provider.
@@ -548,22 +595,14 @@ public final class SocialContract {
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING+ UriPathIndex.SERVICES);
         /**
-         * Key local ID used by content provider. Index to the
-         *  table holding service info.
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String _ID = "_id";
-        /**
-         *  Global ID for the service. E.g. packagename+appname in Android.
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
-        /**
 		 *  User/provided name of the service, e.g. "iDisaster" or "iJacket".
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String NAME = "name";
 		/**
@@ -580,7 +619,12 @@ public final class SocialContract {
 		 * _ID if you own the service, or someone else's _ID if 
 		 * you find a service e.g. on a market place.
          *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String _ID_OWNER = "_id_owner";
 		/**
@@ -589,14 +633,24 @@ public final class SocialContract {
          *  E.g. iDisaster and other crisis management applications can
          *  assign TYPE to be "disaster".
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TYPE = "type";
         /**
 		 * A user-provided description of the service.
          *  <br />
          *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String DESCRIPTION = "description";
 		/**
@@ -604,8 +658,12 @@ public final class SocialContract {
          *  type of the service. It can for instance be set to "android_application"
          *  or "virgo_service" etc.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String APP_TYPE = "app_type";
         @Deprecated
@@ -621,8 +679,12 @@ public final class SocialContract {
 		 * 
 		 * Value needs to be set and kept updated by clients.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: 0.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String AVAILABLE = "available";
 		/**
@@ -630,41 +692,38 @@ public final class SocialContract {
 		 * service to function. The value is the global ID of the
 		 * other service or null.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String DEPENDENCY = "dependency";
 		/**
 		 * String that contains the intent to be used to launch the service
 		 * using Androdid intent mechanism.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String CONFIG = "config";
 		/**
 		 * A URL to the code to be downloaded or to a web service interface.
 		 * This can for instance be a link to an Android App.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String URL = "url";
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -729,22 +788,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Relationship implements SyncColumns, BaseSyncColumns{
+    public static final class Relationship implements DBColumns, SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.RELATIONSHIP);
 
-        /**
-         * Key local ID. Needed for using cursors in Android. Note that _id is
-         * unique only locally on this device.
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the relationship.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Use _ID_P1 instead.
          *  <br />
@@ -756,8 +803,12 @@ public final class SocialContract {
         /**
          * _ID for the first person in the relationship.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_P1 = "_id_p1";
         /**
@@ -771,32 +822,37 @@ public final class SocialContract {
         /**
          * _ID for the second person in the relationship.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_P2 = "_id_p2";
         /**
          * Type of the relationship. Can be e.g. friend, follower.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TYPE = "type"; 
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
         
         /**
-         * The date this record was last modified. Used by sync adapters.
+         * Application-provided description for this record.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
+        public static final String DESCRIPTION = "description"; 
 
         @Deprecated
         public static final String ORIGIN = "origin";
@@ -881,26 +937,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Membership implements SyncColumns, BaseSyncColumns{
+    public static final class Membership implements DBColumns, SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.MEMBERSHIP);
 
-        /**
-         * Key local ID for this membership. Needed for using 
-         * content providers in Android. Note that _id is
-         * unique only locally on this device.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the membership.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Deprecated. Use _ID_MEMBER and look up the member
          * in People table.
@@ -915,8 +955,12 @@ public final class SocialContract {
          * _ID for the member. Can be looked up in People table.
          * 
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_MEMBER = "_id_member";
         /**
@@ -930,10 +974,14 @@ public final class SocialContract {
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
         
         /**
-         * _ID for the community. Can be looked up in People table.
+         * _ID for the community. Can be looked up in Communities table.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          * 
          */
         public static final String _ID_COMMUNITY = "_id_community";
@@ -941,26 +989,25 @@ public final class SocialContract {
          * Type of the membership. Application-defined. Can be used as
          * e.g. role in the community.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TYPE = "type"; 
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
         /**
-         * The date this record was last modified. Used by sync adapters.
+         * Application-provided description for this record.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
-
+        public static final String DESCRIPTION = "description"; 
 
         @Deprecated
         public static final String ORIGIN = "origin";
@@ -1034,26 +1081,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class Sharing implements SyncColumns, BaseSyncColumns{
+    public static final class Sharing implements DBColumns, SyncColumns, BaseSyncColumns{
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.SHARING);
 
-        /**
-         * Key local ID for this sharing. Needed for using 
-         * content providers in Android. Note that _id is
-         * unique only locally on this device.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the sharing.
-          *  <br />
-         *  <br />
-         * Type: TEXT
-        */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Use _ID_SERVICE instead.
          *  <br />
@@ -1065,8 +1096,12 @@ public final class SocialContract {
         /**
          * _ID for the service.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_SERVICE = "_id_service";
         /**
@@ -1080,8 +1115,12 @@ public final class SocialContract {
         /**
          * _ID for the owner. Can be looked up in People table.
           *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
         */
         public static final String _ID_OWNER = "_id_owner";
         /**
@@ -1095,33 +1134,36 @@ public final class SocialContract {
         /**
          * _ID for the community.
           *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
         */
         public static final String _ID_COMMUNITY = "_id_community";
         /**
          * Type of the sharing. Application-defined.
           *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
         */
         public static final String TYPE = "type"; 
         /**
-         * The date this record was created by its origin.
-          *  <br />
+         * Application-provided description for this record.
          *  <br />
-         * Type: INTEGER
-        */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-           *  <br />
-         *  <br />
-         * Type: INTEGER
-       */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
-
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String DESCRIPTION = "description"; 
 
         @Deprecated
         public static final String ORIGIN = "origin";
@@ -1148,27 +1190,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class PeopleActivity implements SyncColumns, BaseSyncColumns,
+    public static final class PeopleActivity implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.PEOPLE_ACTIVITIY);
-        /**
-         * Key local ID for the activity. Needed for using 
-         * content providers in Android. Note that _id is
-         * unique only locally on this device.
-         * 
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the activity.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner of the feed where the
          * activity is added. Has to identify a record in
@@ -1184,52 +1209,61 @@ public final class SocialContract {
          * activity is added. Identifies a record in
          * People table.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
-         * Actor of the activity.
+         * Actor of the activity. This can be the global ID of the
+         * person or service or community that created this activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String ACTOR = "actor";
         /**
          * Object of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String OBJECT = "object";
         /**
          * Verb of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String VERB = "verb";
         /**
          * Target of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TARGET = "target";
         @Deprecated
         public static final String ORIGIN = "origin";	
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
-
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -1246,27 +1280,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class CommunityActivity implements SyncColumns, BaseSyncColumns,
+    public static final class CommunityActivity implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.COMMUNITY_ACTIVITIY);
-        /**
-         * Key local ID for the activity. Needed for using 
-         * content providers in Android. Note that _id is
-         * unique only locally on this device.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         * 
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the activity.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Global ID for the owner community of the feed where the
          * activity is added.
@@ -1286,12 +1303,17 @@ public final class SocialContract {
          * activity is added.
          * 
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
-         * Actor of the activity.
+         * Actor of the activity. This can be the global ID of the
+         * person or service or community that created this activity.
          * <br />
          * Type: TEXT
          */
@@ -1299,38 +1321,38 @@ public final class SocialContract {
         /**
          * Object of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String OBJECT = "object";
         /**
          * Verb of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String VERB = "verb";
         /**
          * Target of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TARGET = "target";
         @Deprecated
         public static final String ORIGIN = "origin";	
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -1344,26 +1366,10 @@ public final class SocialContract {
      * @author Babak dot Farshchian at sintef dot no
      *
      */
-    public static final class ServiceActivity implements SyncColumns, BaseSyncColumns,
+    public static final class ServiceActivity implements DBColumns, SyncColumns, BaseSyncColumns,
     RecommendationColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.SERVICE_ACTIVITY);
-        /**
-         * Key local ID for the activity. Needed for using 
-         * content providers in Android. Note that _id is
-         * unique only locally on this device.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String _ID = "_id"; 
-        /**
-         * Global ID for the activity.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
-        public static final String GLOBAL_ID = "global_id";
         /**
          * Use _ID_FEED_OWNER instead.
          *  <br />
@@ -1376,51 +1382,61 @@ public final class SocialContract {
          * _ID for the owner service of the feed where the
          * activity is added. Can be looked up in Services table.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String _ID_FEED_OWNER = "_id_feed_owner";
         /**
-         * Actor of the activity.
+         * Actor of the activity. This can be the global ID of the
+         * person or service or community that created this activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String ACTOR = "actor";
         /**
          * Object of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String OBJECT = "object";
         /**
          * Verb of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String VERB = "verb";
         /**
          * Target of the activity.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String TARGET = "target";
         @Deprecated
         public static final String ORIGIN = "origin";	
-		/**
-         * The date this record was created by its origin.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 
         @Deprecated
         public static final String SYNC_STATUS = "sync_status";
@@ -1481,70 +1497,68 @@ public final class SocialContract {
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
 	 */
-	public static final class Me implements SyncColumns, BaseSyncColumns{
+	public static final class Me implements DBColumns, SyncColumns, BaseSyncColumns{
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.ME);
 	
 	    /**
-	     * Key local ID. Needed for using cursors in Android. Note that _id is
-	     * unique only locally on this device.
+	     * A foreign key to connect account to a row in the People
+	     * table. E.g. if a user has registered a Box account in Me
+	     * information about the user can be looked up using this 
+	     * value.
          *  <br />
-         *  <br />
-         * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul> 
 	     */
-	    public static final String _ID = "_id"; 
-	    /**
-	     * Global ID for my identity, e.g. JID.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-	     */
-	    public static final String GLOBAL_ID = "global_id";
+	    public static final String _ID_PEOPLE = "_id_people";
 	    /**
 	     * My name to be used with this ID.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 	     */
 	    public static final String NAME = "name"; 
 	    /**
 	     *  My alternative name, e.g. nickname.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 	     */
 	    public static final String DISPLAY_NAME = "display_name";
 	    /**
 	     *  Login user name.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 	     */
 	    public static final String USER_NAME = "user_name";
 	    /**
 	     *  Possible password to be used with user name.
          *  <br />
-         *  <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 	     */
 	    public static final String PASSWORD = "password";
-	    
-		/**
-         * The date this record was created by its origin.
-          *  <br />
-         *  <br />
-         * Type: INTEGER
-        */
-        public static final String CREATION_DATE = "creation_date";
-        
-        /**
-         * The date this record was last modified. Used by sync adapters.
-         *  <br />
-         *  <br />
-         * Type: INTEGER
-         */
-        public static final String LAST_MODIFIED_DATE = "last_modified_date";
-
 
 	    @Deprecated
 	    public static final String ORIGIN = "origin";
@@ -1592,36 +1606,95 @@ public final class SocialContract {
 	 *
 	 */
 	public interface SyncColumns{
+        /**
+         * ID which globally identifies this record. It is typically service-specific
+         * and can be e.g. a Facebook ID, a Jabber ID etc. It is identifiable
+         * by the specific service that i providing the ID.
+         * 
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link GLOBAL_ID_PENDING}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String GLOBAL_ID = "global_id";
 		/**
-		 * The account that was used to sync the entry to the device.
+		 * The name of the account that is used to 
+		 * sync the record.
 		 * <br />
-		 * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String ACCOUNT_NAME ="account_name";
 		/**
-		 * The type of the account that was used to sync the entry to the device.
-		 * Set this to "LOCAL" if the field is not to be synced.
+		 * The type of the account that is used to sync the record.
+		 * Set this to {@link ACCOUNT_TYPE_LOCAL} if the field is 
+		 * not to be synced by a sync adapter.
 		 * <br />
-		 * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link ACCOUNT_TYPE_LOCAL}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String ACCOUNT_TYPE ="account_type";
 		
 		/**
-		 * Boolean value telling whether the row is deleted but not 
-		 * synced.
+		 * Used to tell whether the row is deleted but not 
+		 * synced. Set to 1 if you delete row locally in an app.
+		 * Set to 0 when synced successful in a sync adapter.
 		 * <br />
-		 * Type: INTEGER (boolean) 
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: 0.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
-		public static final String DELETED = "deleted";
+		public static final String DELETED = "deleted"; 
 		/**
 		* Used to indicate that local, unsynced, changes are present.
+		* 1 means the row has local modifications that are not yet
+		* synced by sync adapter. Set to 0 in sync adapter after
+		* a successful sync operation.
 		* <br />
-		* Type: INTEGER (long)
+         * <li>Access: Read-write.
+         * <li>Default: 0.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		*/
 		public static final String DIRTY = "dirty";
+		/**
+         * The date this record was created.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link DEFAULT_NOW_DATE}.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String CREATION_DATE = "creation_date";
+        
+        /**
+         * The date this record was last modified.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link DEFAULT_NOW_DATE}.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
+         */
+        public static final String LAST_MODIFIED_DATE = "last_modified_date";
 	}
-	
-
 
 		/**
 		 * These columns are privately used by sync adapters
@@ -1637,37 +1710,67 @@ public final class SocialContract {
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String SYNC1 ="sync1";
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String SYNC2 ="sync2";
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: TEXT
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String  SYNC3 = "sync3";
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String  SYNC4 = "sync4";
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String  SYNC5 = "sync5";
 		/**
 		 * Generic column for use by sync adapters.
 		 * <br />
-		 * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String  SYNC6 = "sync6";
 	}
@@ -1684,9 +1787,60 @@ public final class SocialContract {
 		 * An integer 0-100 that gives an indication of how
 		 * relevant the current row is for the user.
 		 * <br />
-		 * Type: INTEGER
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: -1.
+         * <li>Type in DB: integer.
+         * <li>DB constraint: not null.
+         * </ul>
 		 */
 		public static final String  RELEVANCE = "relevance";
 	}
-}
 	
+	/**
+	 * Helper class for defining constants to use with services.
+	 * Used by applications.
+	 * 
+	 * @author Babak Farshchian
+	 *
+	 */
+	public interface DBColumns{
+        /**
+         *  Key local ID, used by content provider to denote the location of this
+         *  record in the table. Row number in the table. Set by Android.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-only.
+         * <li>Default: Row number in table. Auto-increment
+         * <li>Type in DB: integer.
+         * </ul>
+         */
+        public static final String _ID = "_id";
+
+	}
+	public static final class ServiceConstants {
+	    /**
+	     * App that provides a service - can be shared in a Community
+	     */
+	    public final String SERVICE_TYPE_PROVIDER = "Provider";
+
+	    /**
+	     * App that is a service client - cannot be shared in a Community
+	     */
+	    public final String SERVICE_TYPE_CLIENT = "Client";
+
+	    /**
+	     * App that is an an extension to a SocialProvider (e.g. UI extension)
+	     * - cannot be shared in a Community
+	     */
+	    public final String SERVICE_TYPE_APP = "App";
+	 // Constant used for services in a community
+	    public final String SERVICE_RECOMMENDED = "RECOMMENDED";
+	    public final String SERVICE_SHARED = "SHARED";
+	    public final String SERVICE_INSTALLED = "INSTALLED";
+	    public final String SERVICE_NOT_INSTALLED = "NOT_INSTALLED";
+
+	}
+}
+
+

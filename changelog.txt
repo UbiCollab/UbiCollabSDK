@@ -1,9 +1,0 @@
-Version 0.2
-* Add an interface SyncColumns for all sync-related columns. 
-* Tag ORIGIN as deprecated. Use new fields from SyncColumns.
-* Tag SYNC_STATUS as deprecated. Use new fields from SyncColumns.
-* Add creation date and last modified to all that were missing.
-* Change type for creation date and last modified date to integer.
-* UriPathIndex and UriMatcherIndex are now protected.
-* Rename actor, object, verb, target for all activity classes. Now they are correct.
-* Update javadoc.
