@@ -41,7 +41,7 @@ import android.net.Uri;
  * Note that this contract is currently the only documentation
  * of {@link SocialProvider} on Android.
  * 
- * @author Babak Farshchian
+ * @author BabakFarshchian
  *
  */
 /**
@@ -279,7 +279,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -290,7 +290,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -302,7 +302,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -316,7 +316,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -329,7 +329,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -426,7 +426,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -440,7 +440,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -465,7 +465,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -476,7 +476,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -599,7 +599,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -635,7 +635,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -647,7 +647,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -660,7 +660,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -694,7 +694,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -706,7 +706,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -718,7 +718,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -835,7 +835,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -847,7 +847,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -991,7 +991,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1002,7 +1002,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1147,7 +1147,7 @@ public final class SocialContract {
           *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1158,7 +1158,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1223,7 +1223,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1234,7 +1234,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1245,7 +1245,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1256,7 +1256,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1323,7 +1323,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1334,7 +1334,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1345,7 +1345,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1396,7 +1396,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1407,7 +1407,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1418,7 +1418,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1429,7 +1429,7 @@ public final class SocialContract {
          * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1520,7 +1520,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1531,7 +1531,7 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1542,18 +1542,19 @@ public final class SocialContract {
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
 	     */
 	    public static final String USER_NAME = "user_name";
 	    /**
-	     *  Possible password to be used with user name.
+	     *  Possible password or token to be used with user name
+	     *  for logging in to the service.
          *  <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1625,7 +1626,7 @@ public final class SocialContract {
 		 * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1712,7 +1713,7 @@ public final class SocialContract {
 		 * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1723,7 +1724,7 @@ public final class SocialContract {
 		 * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
@@ -1734,7 +1735,7 @@ public final class SocialContract {
 		 * <br />
          * <ul>
          * <li>Access: Read-write.
-         * <li>Default: {@link VALUE_NOT_DEFINED}.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
