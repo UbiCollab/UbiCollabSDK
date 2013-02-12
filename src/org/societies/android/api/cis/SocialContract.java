@@ -297,6 +297,22 @@ public final class SocialContract {
          * </ul>
 		 */
 		public static final String DESCRIPTION = "description";
+		
+        /**
+		 * The user name that is used to identify this person at the
+		 * service in the back-end. E.g. if the account type of this 
+		 * record is Box, then USER_NAME will be the email address 
+		 * that identifies this person at Box.
+         *  <br />
+         * <ul>
+         * <li>Access: Read-write.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+         * </ul>
+		 */
+		public static final String USER_NAME = "user_name";
 		/**
          * Email address of the person.
          *  <br />
@@ -1664,7 +1680,10 @@ public final class SocialContract {
 		* 1 means the row has local modifications that are not yet
 		* synced by sync adapter. Set to 0 in sync adapter after
 		* a successful sync operation.
-		* <br />
+		* <br /><br />
+		* When a new record is added to a table, DIRTY needs to be
+		* set to 1.
+         *<br /><br />
          * <li>Access: Read-write.
          * <li>Default: 0.
          * <li>Type in DB: integer.
