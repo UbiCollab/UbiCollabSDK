@@ -7,6 +7,11 @@ UbiCollabSDK is a library file that is used to access UbiCollab components on An
 
 #Change log
 
+##Version 0.4.0
+* Added a new field USER_NAME to People table.
+* New: Use of dirty flag. DIRTY has to be set to 1 when a record in a DB is changed in order for synch adapter to sync it to the service. After a successful sync, DIRTY_FLAG is changed back to 0.
+* Updated documentation for DIRTY and for USER_NAME
+
 ##Version 0.3.2
 * No changes. Only synchronizing version number with UbiShare.
 
