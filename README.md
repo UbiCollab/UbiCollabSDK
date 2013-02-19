@@ -6,6 +6,9 @@ One jar file to rule them all.
 UbiCollabSDK is a library file that is used to access UbiCollab components on Android. You need to copy it to your libs folder. 
 
 #Change log
+##Version 0.4.1
+* New: Added a new class SupportedAccountTypes to provide constant values for account types in sync adapters.
+* Modified: SocialContract.ACCOUNT_TYPE_LOCAL is deprecated.
 
 ##Version 0.4.0
 * Added a new field USER_NAME to People table.

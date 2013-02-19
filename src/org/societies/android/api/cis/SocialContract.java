@@ -69,7 +69,10 @@ public final class SocialContract {
      * you want to use the content provider for storing 
      * local data.
      * 
+     * @deprecated Use {@link SupportedAccountTypes.LOCAL}.
+     * 
      */
+    @Deprecated
     public static final String ACCOUNT_TYPE_LOCAL = "LOCAL";
     
     
