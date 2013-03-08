@@ -44,10 +44,6 @@ import android.net.Uri;
  * @author BabakFarshchian
  *
  */
-/**
- * @author babak
- *
- */
 public final class SocialContract {
 
 	/**
@@ -187,86 +183,6 @@ public final class SocialContract {
 	 * about this type of people will not be verifiable and will probably
 	 * be very inaccurate. Depending on how it is synced.</li>
 	 * </ul>
-	 * Each row has a GLOBAL_ID that is set by the account which syncs
-	 * the row. If the account is ACCOUNT_TYPE_LOCAL, the row will not be 
-	 * synced with any service. For local rows GLOBAL_ID is always 
-	 * GLOBAL_ID_PENDING. Also if you add a new row with account type
-	 * e.g. "Facebook", the row will have GLOBAL ID set to
-	 * GLOBAL_ID_PENDING until the first sync assigns a real "Facebook" ID. 
-	 * This will happen if you for instance add a new user locally
-	 * and want to synch it with a Facebook friend you already have.
-	 * <br /><br />
-	 * 
-	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can insert people by providing one or more of 
-	 * the following when calling insert():
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link DESCRIPTION}
-	 * <li>{@link EMAIL}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link ACCOUNT_NAME}
-	 * </ul>
-	 * Note that it is important to provide the ACCOUNT_TYPE and ACCOUNT_NAME 
-	 * so that Syncing with services can update a new people record to 
-	 * a real person if this is 
-	 * needed. The value of the ACCOUNT_TYPE field depends on the target SyncAdapter.
-	 * It might for instance be "Facebook". See proper SyncAdapter documentation.
-	 * <br />
-	 * If ACCOUNT_TYPE is set to ACCOUNT_TYPE_LOCAL the newly created person
-	 * will not be updated by SyncAdapters. This can be used for building
-	 * a private address book within People part of SocialProvider. In this case 
-	 * the GLOBAL_ID is set to GLOBAL_ID_PENDING by default.
-	 * <br /> 
-	 * 
-	 * 
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link DESCRIPTION}
-	 * <li>{@link EMAIL}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link ACCOUNT_NAME}
-	 * <li>{@link LAST_MODIFIED_DATE}
-	 * </ul>
-	 * 
-	 * Pay attention to ACCOUNT_TYPE.<br />
-	 * 
-	 * As long as ACCOUNT_TYPE is ACCOUNT_TYPE_LOCAL the record will not be Synced. This for 
-	 * instance means that by changing the ACCOUNT_TYPE field from ACCOUNT_TYPE_LOCAL to e.g.
-	 * "Facebook" the application can connect an existing private record to a
-	 * friend of this user on Facebook. Or the opposite, changing ACCOUNT_TYPE 
-	 * from "Facebook" to ACCOUNT_TYPE_LOCAL you can disconnect a record from a service.
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link EMAIL}
-	 * </ul>
-	 * SyncAdapters will only update people whose ACCOUNT_TYPE corresponds to the
-	 * adapter. GLOBAL_ID will be updated in cases where ACCOUNT_TYPE is set to
-	 * non-local and GLOBAL_ID is GLOBAL_ID_PENDING. Or when SyncAdapter discovers
-	 * that the corresponding GLOBAL_ID does not exist anymore (e.g. a 
-	 * Facebook user is deleted).
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete people.<br />
-	 * If a record with ACCOUNT_TYPE=ACCOUNT_TYPE_LOCAL is deleted it will be deleted
-	 * permanently. Otherwise deletion is marked and later handled by
-	 * the proper SyncAdapter.
-	 * <br />
-	 * SyncAdapters can delete people that have ACCOUNT_TYPE set to the 
-	 * adapter and that are already marked for deletion by the user.
-	 * 
-	 * <h1>Query</h1>
-	 * Applications can query for people using standard query URI or using _ID as
-	 * the last part of the URI.
-	 * 
 	 * 
 	 * @author Babak Farshchian
 	 */
@@ -278,10 +194,11 @@ public final class SocialContract {
         public static final Uri CONTENT_URI = 
                     Uri.parse(AUTHORITY_STRING+ UriPathIndex.PEOPLE);
        /**
-         * Name of the person.
+         * Name of the person. E.g. John Doe.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -289,10 +206,11 @@ public final class SocialContract {
          */
         public static final String NAME = "name";
         /**
-		 * A description of the person.
+		 * A description of the person. E.g. Rescuer.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -308,7 +226,8 @@ public final class SocialContract {
 		 * that identifies this person at Box.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -320,7 +239,8 @@ public final class SocialContract {
          * Email address of the person.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -334,7 +254,8 @@ public final class SocialContract {
          * Phone number for the person.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -347,7 +268,8 @@ public final class SocialContract {
          * Physical address of the person.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -380,56 +302,6 @@ public final class SocialContract {
 	 * You might have different levels of information for the different
 	 * types of communities.
 	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can insert communities that will be confirmed
-	 * by SyncAdapters. While confirmation pending,
-	 *  {@link GLOBAL_ID} will be GLOBAL_ID_PENDING.
-	 *  
-	 * Applications will have to provide the following
-	 * parameters in when inserting:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional)
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * 
-	 * When an application inserts a community, {@link GLOBAL_ID} will be
-	 * set to GLOBAL_ID_PENDING by {@link SocialProvider}. This has to be changed
-	 * by a SyncAdapter upon next successful synchronization. The sync
-	 * adapter then has to write the correct global_id. While a community
-	 * is pending it will not accept membership or sharing of services.
-	 * 
-     *  <br />
-	 * SyncAdapters cannot insert new communities.
-	 * 
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link NAME}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION}
-	 * </ul>
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link NAME}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION}
-	 * </ul>
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete communities. Only communities that belong to
-	 * the logged-in user and that are empty can be deleted.
-	 * <br />
-	 * SyncAdapters can only delete communities that are marked for
-	 * deletion. 
-	 * <h1>Query</h1>
-	 * Applications and SyncAdapters can query for communities using standard
-	 * query URI or using _ID as the last part of the URI.
-     * 
      * @author Babak Farshchian
      *
      */
@@ -444,6 +316,8 @@ public final class SocialContract {
          * Name of the community.
          *  <br />
          * <ul>
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Access: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
@@ -451,19 +325,7 @@ public final class SocialContract {
          * </ul>
          */
 		public static final String NAME = "name";
-		/**
-		 * Global ID of the person who owns this community.
-		 * <br /><br />
-		 * Deprecated. Use _ID_OWNER and look up global ID in
-		 * the People table.
-         *  <br />
-         * <ul>
-         * <li>Access: Read-write.
-         * <li>Default: {@link #VALUE_NOT_DEFINED}.
-         * <li>Type in DB: text.
-         * <li>DB constraint: not null.
-         * </ul>
-		 */
+
 		@Deprecated
 		public static final String OWNER_ID = "owner_id";
 		/**
@@ -471,7 +333,8 @@ public final class SocialContract {
 		 * key to look up a row in the People table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -483,7 +346,8 @@ public final class SocialContract {
          *  The type will be defined and used by applications.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -494,7 +358,8 @@ public final class SocialContract {
 		 * A user-provided description of the community.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -515,7 +380,7 @@ public final class SocialContract {
 	 * Constants and helpers for operating on services.<br />
 	 * <br />
 	 * This is the URI you will use for accessing information about services.
-	 * Every service which is accessible from {@link SocialProvider} has an
+	 * Every service which is accessible from SocialProvider has an
 	 * entry in this table. You can search for services using GLOBAL_ID, name etc.
 	 * You can find information about both of the following:
 	 * <ul>
@@ -526,82 +391,6 @@ public final class SocialContract {
 	 * You might have different levels of information for the different
 	 * types of services.
 	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can insert services. Applications will have to provide the following
-	 * parameters when inserting services:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link APP_TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link CONFIG} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link URL} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * </ul>
-	 * 
-	 * When an application inserts a non-local row, GLOBAL_ID will be
-	 * set to GLOBAL_ID_PENDING by {@link SocialProvider}. This has to be changed
-	 * by a SyncAdapter upon next successful synchronization. A valid
-	 * GLOBAL_ID has to be written back.
-	 * 
-	 * SyncAdapters can also insert services. SyncAdapters have to
-	 * set the following parameters in the query in order to insert successfully:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link TYPE}
-	 * <li>{@link DESCRIPTION} (optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link APP_TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link CONFIG} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * <li>{@link URL} (Optional, set to VALUE_NOT_DEFINED if not provided)
-	 * </ul>
-	 * 
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link DESCRIPTION}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY}
-	 * <li>{@link CONFIG}
-	 * <li>{@link URL}
-	 * </ul>
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link NAME}
-	 * <li>{@link OWNER_ID}
-	 * <li>{@link DESCRIPTION}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * <li>{@link AVAILABLE}
-	 * <li>{@link DEPENDENCY}
-	 * <li>{@link CONFIG}
-	 * <li>{@link URL}
-	 * </ul>
-	 * 
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete services. Only services that belong to
-	 * the logged-in user can be deleted. A service can be deleted either
-	 * by appending _ID to the end of the URI or via a standard query.<br />
-	 * <br />
-	 * SyncAdapters can delete services by either appending _ID to the
-	 * end of the query URI or using a standard selection.
-	 * 
-	 * <h1>Query</h1>
-	 * Applications and SyncAdapters can query for services using standard
-	 * query URI or using _ID as the last part of the URI.
-     * 
      * @author Babak Farshchian
      *
      */
@@ -617,20 +406,15 @@ public final class SocialContract {
 		 *  User/provided name of the service, e.g. "iDisaster" or "iJacket".
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
 		 */
 		public static final String NAME = "name";
-		/**
-		 * Global ID of the person who owns this service. This can be your own
-		 * Global ID if you own the service, or someone else's global ID if 
-		 * you find a service e.g. on a market place.
-         *  <br />
-         * Type: TEXT
-		 */
+
 		@Deprecated
 		public static final String OWNER_ID = "owner_id";
 		/**
@@ -639,7 +423,8 @@ public final class SocialContract {
 		 * you find a service e.g. on a market place.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -647,13 +432,14 @@ public final class SocialContract {
 		 */
 		public static final String _ID_OWNER = "_id_owner";
 		/**
-         *  The type of the service being stored. This is a user-provided
-         *  name, which can be the name given by the client application.
+         *  The type of the service being stored. This is an application-defined
+         *  string, which can be the name given by the client application.
          *  E.g. iDisaster and other crisis management applications can
          *  assign TYPE to be "disaster".
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -665,7 +451,8 @@ public final class SocialContract {
          *  <br />
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -678,7 +465,8 @@ public final class SocialContract {
          *  or "virgo_service" etc.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -689,17 +477,18 @@ public final class SocialContract {
         public static final String ORIGIN = "origin";
         /**
 		 * Tells whether this service is available on this device.
-		 * E.g. if the service is available through an app installed on an 
+		 * E.g. if the service is available through an app installed on this 
 		 * Android device then this parameter is set to "1". If this is a 
 		 * cloud service accessible through e.g. a REST API this parameter
 		 *  is set to "1". If this is an app that is not yet installed or it 
 		 *  is a cloud service that is not available through a URI it is
 		 *  set to "0".
 		 * 
-		 * Value needs to be set and kept updated by clients.
+		 * Value needs to be set and kept updated by applications.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: 0.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -709,10 +498,11 @@ public final class SocialContract {
 		/**
 		 * A field telling whether this service depends on another 
 		 * service to function. The value is the global ID of the
-		 * other service or null.
+		 * other service or {@link #VALUE_NOT_DEFINED} if no dependencies.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -721,10 +511,14 @@ public final class SocialContract {
 		public static final String DEPENDENCY = "dependency";
 		/**
 		 * String that contains the intent to be used to launch the service
-		 * using Androdid intent mechanism.
+		 * using Android intent mechanism. It can also be used for other
+		 * purposes if the service is not represented as an Android app.
+		 * E.g. it can be parameters to be passed in a REST call. This is
+		 * defined by the applications.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -733,10 +527,11 @@ public final class SocialContract {
 		public static final String CONFIG = "config";
 		/**
 		 * A URL to the code to be downloaded or to a web service interface.
-		 * This can for instance be a link to an Android App.
+		 * This can for instance be a link to an Android App in an app store.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -751,59 +546,10 @@ public final class SocialContract {
     /**
      * <h1>Class Relationship</h1>
      * Class that provides information about relationships among
-     * two people.<br /><br />
+     * two records from People.<br /><br />
      *  If you want to know who is friends with whom or
      * who is following whom etc. use this.
      * 
- 	 * <h1>Insert</h1> 
-	 * Applications can insert relationships by providing the following:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link GLOBAL_ID_P1}
-	 * <li>{@link GLOBAL_ID_P2}
-	 * <li>{@link TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * 
-	 * GLOBAL_ID_P1 and GLOBAL_ID_P2 have to exist among the user's People.<br/>
-	 * 
-	 * ORIGIN refers to the social service, e.g. "Facebook", and is used
-	 * by SyncAdapters. ORIGIN can also be "private" which means it is
-	 * stored only locally.<br/>
-	 * 
-	 * After a relationship is created by an application, its GLOBAL_ID
-	 * is set to "pending" until a sync is performed.<br/>
-	 * 
-	 * SyncAdapters might also insert a relationship. GLOBAL_ID_P1 and 
-	 * GLOBAL_ID_P2 have to exist among the user's People. The following
-	 * should be set when a SyncAdapter inserts relationships:
-	 * 
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link GLOBAL_ID_P1}
-	 * <li>{@link GLOBAL_ID_P2}
-	 * <li>{@link TYPE}
-	 * <li>{@link ORIGIN}
-	 * </ul>
-	 * 
-	 * 
- 	 * <h1>Update</h1>
- 	 * Nothing can be updated for a relationship.
- 	 * 
- 	 * <h1>Query</h1>
- 	 * 
- 	 * All relationships fields can be used for querying.
- 	 * 
- 	 * <h1>Delete</h1>
- 	 * An application can delete a relationship. The relationship will then
- 	 * be labeled deleted but will not be removed until next sync. Relationships
- 	 * with ORIGIN as "private" will be removed immediately.<br/>
- 	 * 
- 	 * SyncAdapters should delete relationships marked for deletion. They
- 	 * should also delete relationships that are deleted by the
- 	 * service. In this case the relationship's GLOBAL_ID will be set
- 	 * to "pending" and its origin will be set to "private".
- 	 *  
      * @author Babak dot Farshchian at sintef dot no
      *
      */
@@ -811,38 +557,30 @@ public final class SocialContract {
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.RELATIONSHIP);
 
-        /**
-         * Use _ID_P1 instead.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
         @Deprecated
         public static final String GLOBAL_ID_P1 = "global_id_p1";
         /**
-         * _ID for the first person in the relationship.
+         * _ID for the first person in the relationship. This is a
+         * foreign key point to _ID in People table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
          * </ul>
          */
         public static final String _ID_P1 = "_id_p1";
-        /**
-         * Use _ID_P2 instead.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
         @Deprecated
         public static final String GLOBAL_ID_P2 = "global_id_p2";
         /**
-         * _ID for the second person in the relationship.
+         * _ID for the second person in the relationship. This is a
+         * foreign key point to _ID in People table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -853,7 +591,8 @@ public final class SocialContract {
          * Type of the relationship. Can be e.g. friend, follower.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -865,7 +604,8 @@ public final class SocialContract {
          * Application-provided description for this record.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -877,6 +617,7 @@ public final class SocialContract {
         public static final String ORIGIN = "origin";
     }
     /**
+     * <h1>Class Membership</h1>
      * <br />Constants and helpers for operating on memberships in
      * communities.<br />
 	 * <br />
@@ -893,65 +634,6 @@ public final class SocialContract {
 	 * You might have different levels of information for the different
 	 * memberships based on your access rights to services that provide 
 	 * this information.
-	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can insert memberships. Applications will have to provide the following
-	 * parameters when inserting memberships:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link GLOBAL_ID_MEMBER}
-	 * <li>{@link GLOBAL_ID_COMMUNITY}
-	 * <li>{@link TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * 
-	 * The membership will be created only if the member is among user's People and
-	 * only when the communiy is among user's Communities. A pending community
-	 * cannot accept membership. GLOBAL_ID of the membership is set to "pending" 
-	 * until the next sync. ORIGIN is used by SyncAdapters to recognize the 
-	 * relationship during the next sync.<br/>
-	 * <br/>
-	 * SyncAdapters can also insert memberships. SyncAdapters have to
-	 * set the following parameters in the query in order to insert successfully:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link GLOBAL_ID_MEMBER}
-	 * <li>{@link GLOBAL_ID_COMMUNITY}
-	 * <li>{@link TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * The membership will be inserted only if GLOBAL_ID_MEMBER is an ID of the 
-	 * current user, or the user owns or is a member of GLOBAL_ID_COMMUNITY.
-	 * 
-	 * Memberships cannot exist privately, i.e. ORIGIN cannot be "private".
-	 * 
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link TYPE}
-	 * </ul>
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link TYPE}
-	 * </ul>
-	 * 
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete memberships. A user (and his/her logged in 
-	 * application) can delete the following memberships:
-	 * <ul>
-	 * <li>Memberships that involve the user.</li>
-	 * <li>Memberships that involve communities where the user is owner.</li> 
-	 * </ul>
-	 * 
-	 * <br />
-	 * SyncAdapters can delete any membership.
-	 * 
-	 * <h1>Query</h1>
-	 * Applications and SyncAdapters can query for memberships using standard
-	 * query URI or using _ID as the last part of the URI.
-     * 
      * 
      * @author Babak dot Farshchian at sintef dot no
      *
@@ -960,14 +642,6 @@ public final class SocialContract {
         public static final Uri CONTENT_URI = 
                 Uri.parse(AUTHORITY_STRING + UriPathIndex.MEMBERSHIP);
 
-        /**
-         * Deprecated. Use _ID_MEMBER and look up the member
-         * in People table.
-         * 
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
         @Deprecated
         public static final String GLOBAL_ID_MEMBER = "global_id_member";
         /**
@@ -982,13 +656,6 @@ public final class SocialContract {
          * </ul>
          */
         public static final String _ID_MEMBER = "_id_member";
-        /**
-         * Deprecated. Use _ID_COMMUNITY and look up the community
-         * in the Communities table.
-         *  <br />
-         *  <br />
-         * Type: TEXT
-         */
         @Deprecated
         public static final String GLOBAL_ID_COMMUNITY = "global_id_community";
         
@@ -996,7 +663,8 @@ public final class SocialContract {
          * _ID for the community. Can be looked up in Communities table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1009,7 +677,8 @@ public final class SocialContract {
          * e.g. role in the community.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1020,7 +689,8 @@ public final class SocialContract {
          * Application-provided description for this record.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1033,69 +703,18 @@ public final class SocialContract {
     }
     
     /**
+     * <h1>Class Sharing</h1>
      * <br />Constants and helpers for operating on sharing of services in
      * communities.<br />
 	 * <br />
 	 * This is the URI you will use for accessing information about what is
 	 * shared in which community. Every sharing which is accessible from 
-	 * this user's {@link SocialProvider} has an entry in this table. 
+	 * this user's SocialProvider has an entry in this table. 
 	 * You can find information about both of the following:
 	 * <ul>
 	 * <li>What is shared by this user in which community.</li>
-	 * <li>What is shared by oher users in which community.</li>
+	 * <li>What is shared by other users in which community.</li>
 	 * </ul>
-	 * 
-	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can insert sharing. Applications will have to provide the following
-	 * parameters when inserting memberships:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link GLOBAL_ID_OWNER}
-	 * <li>{@link GLOBAL_ID_SERVICE}
-	 * <li>{@link GLOBAL_ID_COMMUNITY}
-	 * <li>{@link TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * 
-	 * <br/>
-	 * SyncAdapters can also insert memberships. SyncAdapters have to
-	 * set the following parameters in the query in order to insert successfully:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link GLOBAL_ID_OWNER}
-	 * <li>{@link GLOBAL_ID_SERVICE}
-	 * <li>{@link GLOBAL_ID_COMMUNITY}
-	 * <li>{@link TYPE}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link TYPE}
-	 * </ul>
-	 * 
-	 * SyncAdapters can update:
-	 * <ul>
-	 * <li>{@link TYPE}
-	 * </ul>
-	 * 
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete a sharing. A user (and his/her logged in 
-	 * application) can delete the following sharings:
-	 * <ul>
-	 * <li>Sharings that involve the user.</li>
-	 * <li>Sharings that involve communities where the user is owner.</li> 
-	 * </ul>
-	 * 
-	 * <br />
-	 * SyncAdapters can delete any sharing.
-	 * 
-	 * <h1>Query</h1>
-	 * Applications and SyncAdapters can query for sharings using standard
-	 * query URI or using _ID as the last part of the URI.
-     * 
      * 
      * @author Babak dot Farshchian at sintef dot no
      *
@@ -1116,7 +735,8 @@ public final class SocialContract {
          * _ID for the service.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1135,7 +755,8 @@ public final class SocialContract {
          * _ID for the owner. Can be looked up in People table.
           *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1154,7 +775,8 @@ public final class SocialContract {
          * _ID for the community.
           *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1165,7 +787,8 @@ public final class SocialContract {
          * Type of the sharing. Application-defined.
           *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1176,7 +799,8 @@ public final class SocialContract {
          * Application-provided description for this record.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1189,22 +813,11 @@ public final class SocialContract {
     }
     
     /**
+     * <h1>Class PeopleActivity</h1>
      * Represents a table containing all the activities that are 
      * added to the activity feeds for people. You can search 
      * the table using a specific user's global ID as feed owner 
      * ID.
-     * <h1>Insert</h1> 
-	 * Applications can insert activities. Applications will have to provide the following
-	 * parameters when inserting activities:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID} (needed temporally until we have a working sync adapter)
-	 * <li>{@link GLOBAL_ID_FEED_OWNER}
-	 * <li>{@link GLOBAL_ID_ACTOR}
-	 * <li>{@link GLOBAL_ID_OBJECT}
-	 * <li>{@link GLOBAL_ID_VERB}
-	 * <li>{@link GLOBAL_ID_TARGET}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
 	 * 
      * @author Babak dot Farshchian at sintef dot no
      *
@@ -1214,9 +827,7 @@ public final class SocialContract {
 	    public static final Uri CONTENT_URI = 
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.PEOPLE_ACTIVITIY);
         /**
-         * Global ID for the owner of the feed where the
-         * activity is added. Has to identify a record in
-         * People.
+         * Use _ID_FEED_OWNER instead.
          *  <br />
          *  <br />
          * Type: TEXT
@@ -1229,7 +840,8 @@ public final class SocialContract {
          * People table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1239,9 +851,11 @@ public final class SocialContract {
         /**
          * Actor of the activity. This can be the global ID of the
          * person or service or community that created this activity.
+         * Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1249,10 +863,11 @@ public final class SocialContract {
          */
         public static final String ACTOR = "actor";
         /**
-         * Object of the activity.
+         * Object of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1260,10 +875,11 @@ public final class SocialContract {
          */
         public static final String OBJECT = "object";
         /**
-         * Verb of the activity.
+         * Verb of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1271,10 +887,11 @@ public final class SocialContract {
          */
         public static final String VERB = "verb";
         /**
-         * Target of the activity.
+         * Target of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1291,6 +908,7 @@ public final class SocialContract {
     	
     }
     /**
+     * <h1>Class CommunityActivity</h1>
      * Represents a table containing all the activities that are 
      * added to the activity feeds for communities. You can search 
      * the table using a specific community's global ID as feed owner 
@@ -1318,12 +936,13 @@ public final class SocialContract {
         @Deprecated
         public static final String GLOBAL_ID_FEED_OWNER = "global_id_feed_owner";
         /**
-         * Global ID for the owner community of the feed where the
-         * activity is added.
+         * _ID for the owner community of the feed where the
+         * activity is added. Refers to _ID in Communities
          * 
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1333,15 +952,23 @@ public final class SocialContract {
         /**
          * Actor of the activity. This can be the global ID of the
          * person or service or community that created this activity.
+         * Application-defined.
          * <br />
-         * Type: TEXT
+         * <ul>
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
          */
         public static final String ACTOR = "actor";
         /**
-         * Object of the activity.
+         * Object of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1349,10 +976,11 @@ public final class SocialContract {
          */
         public static final String OBJECT = "object";
         /**
-         * Verb of the activity.
+         * Verb of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1360,10 +988,11 @@ public final class SocialContract {
          */
         public static final String VERB = "verb";
         /**
-         * Target of the activity.
+         * Target of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1377,9 +1006,10 @@ public final class SocialContract {
         public static final String SYNC_STATUS = "sync_status";
     }
     /**
+     * <h1>Class ServiceActivity</h1>
      * Represents a table containing all the activities that are 
      * added to the activity feeds for services. You can search 
-     * the table using a specific service's global ID as feed owner 
+     * the table using a specific service's _ID as feed owner 
      * ID.
      * 
      * @author Babak dot Farshchian at sintef dot no
@@ -1402,7 +1032,8 @@ public final class SocialContract {
          * activity is added. Can be looked up in Services table.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1412,9 +1043,11 @@ public final class SocialContract {
         /**
          * Actor of the activity. This can be the global ID of the
          * person or service or community that created this activity.
+         * Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1422,10 +1055,11 @@ public final class SocialContract {
          */
         public static final String ACTOR = "actor";
         /**
-         * Object of the activity.
+         * Object of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1433,10 +1067,11 @@ public final class SocialContract {
          */
         public static final String OBJECT = "object";
         /**
-         * Verb of the activity.
+         * Verb of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1444,10 +1079,11 @@ public final class SocialContract {
          */
         public static final String VERB = "verb";
         /**
-         * Target of the activity.
+         * Target of the activity. Application-defined.
          * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1462,56 +1098,15 @@ public final class SocialContract {
     }
 
     /**
+     * <h1>Class Me</h1>
 	 * Class that provides information about the owner of 
-	 * the current device. This is mainly information that will
-	 * be extracted from CSS Manager Light. Note that you can have 
-	 * as many CSS IDs as you wish.
-	 * 
-	 * <h1>Class overview</h1> 
-	 * Constants and helpers for operating on own identities and profiles.<br />
+	 * the current device and the accounts the user has
+	 * set up with various synchronization services. There
+	 * will be one record for each account. Line 0 in this
+	 * table is a default local account that is created upon
+	 * installation.
 	 * <br />
-	 * This is the URI you will use for creating and managing your identity and 
-	 * profile information. You can do the following:
-	 * <ul>
-	 * <li>Store information about various identities, user name/passwords, and profile
-	 * data about yourself.</li>
-	 * <li>Query this information.</li>
-	 * </ul>
-	 * The information here is normally not synchronized with cloud services since 
-	 * it might include private information.
-	 * 
-	 * <h1>Insert</h1> 
-	 * Applications can create new identities as records under /Me. SyncAdapters 
-	 * will not be able to sync this data.<br />
 	 * <br />
-	 * The following parameters are needed when inserting:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link DISPLAY_NAME} (Optional, set to "NA" if not provided)
-	 * <li>{@link USER_NAME}
-	 * <li>{@link PASSWORD}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 *  
-	 * <h1>Update</h1> 
-	 * Applications can update:
-	 * <ul>
-	 * <li>{@link GLOBAL_ID}
-	 * <li>{@link NAME}
-	 * <li>{@link DISPLAY_NAME}
-	 * <li>{@link USER_NAME}
-	 * <li>{@link PASSWORD}
-	 * <li>{@link ACCOUNT_TYPE}
-	 * </ul>
-	 * 
-	 * <h1>Delete</h1>
-	 * Applications can delete any record under Me.<br />
-	 * <br />
-	 * 
-	 * <h1>Query</h1>
-	 * Applications can query for identities/profiles using standard 
-	 * query URI or using _ID as the last part of the URI.
 	 * 
 	 * @author Babak dot Farshchian at sintef dot no
 	 *
@@ -1521,13 +1116,14 @@ public final class SocialContract {
 	            Uri.parse(AUTHORITY_STRING + UriPathIndex.ME);
 	
 	    /**
-	     * A foreign key to connect account to a row in the People
-	     * table. E.g. if a user has registered a Box account in Me
-	     * information about the user can be looked up using this 
-	     * value.
+	     * A foreign key to connect a row in Me to a row in the People
+	     * table. E.g. if a user has registered a Box account in Me,
+	     * information about the user under this Box account 
+	     * should exist in the People table using _ID_PEOPLE.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1538,7 +1134,8 @@ public final class SocialContract {
 	     * My name to be used with this ID.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1549,7 +1146,8 @@ public final class SocialContract {
 	     *  My alternative name, e.g. nickname.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1560,7 +1158,8 @@ public final class SocialContract {
 	     *  Login user name.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1572,7 +1171,8 @@ public final class SocialContract {
 	     *  for logging in to the service.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1627,12 +1227,41 @@ public final class SocialContract {
 	 */
 	public interface SyncColumns{
         /**
-         * ID which globally identifies this record. It is typically service-specific
-         * and can be e.g. a Facebook ID, a Jabber ID etc. It is identifiable
-         * by the specific service that i providing the ID.
+         * ID which globally identifies this record. This field should only
+         * be used to control the synchronization of records with remote 
+         * services. Locally you should always use _ID for referring to records.
+         * GLOBAL_IDs are defined and provided by
+         * remote services. GLOBAL_ID is either set by the sync adapter or 
+         * by the application when creating the row. These are some scenarios
+         * for setting GLOBAL_IDs:
+         * <ul>
+         * <li>Locally adding a row that represents a remote entity. 
+         * Example: You want to add an existing Box.com user to People. In
+         * this case the application should set the GLOBAL_ID to its 
+         * correct value, in this case Box.com user name of the new user.
+         * <li>Locally adding a new row that does not yet exist remotely. Example:
+         * you want to create a new Community and you want to use Box.com as remote
+         * service. In this case the application should set GLOBAL_ID to 
+         * GLOBAL_ID_PENDING and use the correct ACCOUNT_TYPE and ACCOUNT_NAME,
+         * in this case SupportedAccountTypes.NET_BOX and a user-provided
+         * account name.
+         * <li>Locally adding a new row that you want to keep local. Example:
+         * You add a new row to People but you want to keep it local and
+         * don't want to synchronize the information with remote services. 
+         * In this case the application should set the value of GLOBAL_ID to
+         * VALUE_NOT_DEFINED (the default value) and set account type to
+         * SupportedAccountTypes.LOCAL.
+         * <li>Remotely adding a new row. Example: A new Membership for 
+         * this user is added to the Membership table by another user. In this
+         * case it is the job of the sync adapter to add a local row to 
+         * the right table (e.g. Membership)
+         * with the right GLOBAL_ID for the service that is being shared
+         * </ul>
+         * 
          * 
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link GLOBAL_ID_PENDING}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1640,35 +1269,57 @@ public final class SocialContract {
          */
         public static final String GLOBAL_ID = "global_id";
 		/**
-		 * The name of the account that is used to 
-		 * sync the record.
-		 * <br />
-         * <ul>
-         * <li>Access: Read-write.
-         * <li>Default: {@link #VALUE_NOT_DEFINED}.
-         * <li>Type in DB: text.
-         * <li>DB constraint: not null.
-         * </ul>
-		 */
-		public static final String ACCOUNT_NAME ="account_name";
-		/**
 		 * The type of the account that is used to sync the record.
-		 * Set this to {@link ACCOUNT_TYPE_LOCAL} if the field is 
-		 * not to be synced by a sync adapter.
+		 * Valid values can be found in class {@link #SupportedAccountTypes}.
+		 * the value {@link #SupportedAccountTypes.LOCAL} can be used for
+		 * records that are not to be synchronized with remote services.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link ACCOUNT_TYPE_LOCAL}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
          * </ul>
 		 */
 		public static final String ACCOUNT_TYPE ="account_type";
+		/**
+		 * The name of the account that is used to sync the record.
+		 * This is used in conjunction with ACCOUNT_TYPE. for each
+		 * ACCOUNT_TYPE the user might have multiple local accounts
+		 * with different ACCOUNT_NAMES. For instance, the user might
+		 * have multiple Box.com account with different ACCOUNT_NAMEs.
+		 * <br />
+         * <ul>
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
+         * <li>Default: {@link #VALUE_NOT_DEFINED}.
+         * <li>Type in DB: text.
+         * <li>DB constraint: not null.
+         * </ul>
+		 */
+		public static final String ACCOUNT_NAME ="account_name";
 		
 		/**
-		 * Used to tell whether the row is deleted but not 
-		 * synced. Set to 1 if you delete row locally in an app.
-		 * Set to 0 when synced successful in a sync adapter.
+		 * Used to tell whether the row is marked for deletion. 
+		 * Set to 1 if you want to delete a row. Simply 
+		 * deleting the row locally will not necessarily delete
+		 * it from the remote service.
+		 * <br /><br />
+		 * Sync adapters should use DELETED to delete the row
+		 * locally and in the remote service. If the deletion 
+		 * is failed DELETE should be set to 2.
+		 * <br /><br />
+		 * Values:
+         * <ul>
+         * <li>0: The row is not marked for deletion.
+         * <li>1: The row is marked for deletion locally but is not yet
+         * deleted in the remote service.
+         * <li>2: There was an error when deleting this row on the
+         * remote service.
+         * </ul>
+		 * <br />
+		 * <br />
 		 * <br />
          * <ul>
          * <li>Access: Read-write.
@@ -1681,13 +1332,25 @@ public final class SocialContract {
 		/**
 		* Used to indicate that local, unsynced, changes are present.
 		* 1 means the row has local modifications that are not yet
-		* synced by sync adapter. Set to 0 in sync adapter after
-		* a successful sync operation.
+		* synced with remote service. Sync adapters should use this 
+		* field to find out which records are changed locally. When
+		* changes are synchronized with remote service, sych adapter
+		* should reset DIRTY to 0. If errors occur, synch adapter 
+		* should set DIRTY to 2.
 		* <br /><br />
-		* When a new record is added to a table, DIRTY needs to be
-		* set to 1.
+		* When a new record is locally added to a table by an application,
+		* DIRTY needs to be set to 1.
          *<br /><br />
-         * <li>Access: Read-write.
+		 * Values:
+         * <ul>
+         * <li>0: The row is not changed locally.
+         * <li>1: The row is changed locally but is not yet
+         * changed in the remote service.
+         * <li>2: There was an error when synchronizing changes to the
+         * remote service.
+         * </ul>
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: 0.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1698,7 +1361,8 @@ public final class SocialContract {
          * The date this record was created.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link DEFAULT_NOW_DATE}.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1710,7 +1374,8 @@ public final class SocialContract {
          * The date this record was last modified.
          *  <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link DEFAULT_NOW_DATE}.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1734,7 +1399,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1745,7 +1411,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1756,7 +1423,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: {@link #VALUE_NOT_DEFINED}.
          * <li>Type in DB: text.
          * <li>DB constraint: not null.
@@ -1767,7 +1435,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1778,7 +1447,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1789,7 +1459,8 @@ public final class SocialContract {
 		 * Generic column for use by sync adapters.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1808,10 +1479,13 @@ public final class SocialContract {
 	public interface RecommendationColumns{
 		/**
 		 * An integer 0-100 that gives an indication of how
-		 * relevant the current row is for the user.
+		 * relevant the current row is for the user. This value
+		 * can be set by a remote recommender service or 
+		 * locally by an application.
 		 * <br />
          * <ul>
-         * <li>Access: Read-write.
+         * <li>Access applications: Read-write.
+         * <li>Access sync adapters: Read-write.
          * <li>Default: -1.
          * <li>Type in DB: integer.
          * <li>DB constraint: not null.
@@ -1829,11 +1503,15 @@ public final class SocialContract {
 	 */
 	public interface DBColumns{
         /**
-         *  Key local ID, used by content provider to denote the location of this
-         *  record in the table. Row number in the table. Set by Android.
-         *  <br />
+         * Key local ID, used by content provider to denote the location of this
+         * record in the table. Row number in the table. Set by Android.
+         * <br /><br />
+         * _IDs are always used locally for identifying records. They don't
+         * have any meaning for remote services. So they should not be
+         * synchronized by sync adapters. 
          * <ul>
-         * <li>Access: Read-only.
+         * <li>Access applications: Read.
+         * <li>Access sync adapters: Read.
          * <li>Default: Row number in table. Auto-increment
          * <li>Type in DB: integer.
          * </ul>
@@ -1841,27 +1519,33 @@ public final class SocialContract {
         public static final String _ID = "_id";
 
 	}
+	/**
+	 * This class provides a set of constant values to be used when
+	 * working with services.
+	 * @author Babak Farshchian
+	 *
+	 */
 	public static final class ServiceConstants {
 	    /**
 	     * App that provides a service - can be shared in a Community
 	     */
-	    public final String SERVICE_TYPE_PROVIDER = "Provider";
+	    public static final String SERVICE_TYPE_PROVIDER = "Provider";
 
 	    /**
 	     * App that is a service client - cannot be shared in a Community
 	     */
-	    public final String SERVICE_TYPE_CLIENT = "Client";
+	    public static final String SERVICE_TYPE_CLIENT = "Client";
 
 	    /**
 	     * App that is an an extension to a SocialProvider (e.g. UI extension)
 	     * - cannot be shared in a Community
 	     */
-	    public final String SERVICE_TYPE_APP = "App";
+	    public static final String SERVICE_TYPE_APP = "App";
 	 // Constant used for services in a community
-	    public final String SERVICE_RECOMMENDED = "RECOMMENDED";
-	    public final String SERVICE_SHARED = "SHARED";
-	    public final String SERVICE_INSTALLED = "INSTALLED";
-	    public final String SERVICE_NOT_INSTALLED = "NOT_INSTALLED";
+	    public static final String SERVICE_RECOMMENDED = "RECOMMENDED";
+	    public static final String SERVICE_SHARED = "SHARED";
+	    public static final String SERVICE_INSTALLED = "INSTALLED";
+	    public static final String SERVICE_NOT_INSTALLED = "NOT_INSTALLED";
 
 	}
 }
