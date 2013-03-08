@@ -7,8 +7,8 @@ UbiCollabSDK is a library file that is used to access UbiCollab components on An
 
 #Change log
 ##Version 0.4.2
-* Fixes #24.
-* Fixes #23. (was actually fixes in 0.4.1 but doc was not updated).
+* Fixes [#24](https://github.com/UbiCollab/UbiCollabSDK/issues/24).
+* Fixes [#23](https://github.com/UbiCollab/UbiCollabSDK/issues/23). (was actually fixes in 0.4.1 but doc was not updated).
 * Documentation updated. See [here](http://ubicollab.github.com/UbiCollabSDK/javadoc/).
 
 ##Version 0.4.1
